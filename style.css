@@ -108,3 +108,27 @@ select[multiple] {
 .template-btn:hover {
   background: #1976D2;
 }
+
+#operatorStats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.operator-stat {
+  background: white;
+  padding: 10px;
+  border-radius: 4px;
+  border-left: 4px solid;
+}
+
+.operator-stat h4 {
+  margin: 0 0 10px 0;
+}
+
+/* Operator-specific colors */
+.operator-stat:nth-child(1) { border-color: #FF6B00; } /* Orange */
+.operator-stat:nth-child(2) { border-color: #E31E24; } /* Moldcell */
+.operator-stat:nth-child(3) { border-color: #7B68EE; } /* Unite */
+.operator-stat:nth-child(4) { border-color: #4CAF50; } /* Moldtelecom */

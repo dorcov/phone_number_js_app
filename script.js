@@ -170,6 +170,14 @@ async function generateNumbers() {
   let generated = 0;
   let rejected = 0;
 
+  // Initialize operator counters
+  const operatorCounts = {
+    Orange: { original: 0, generated: 0 },
+    Moldcell: { original: 0, generated: 0 },
+    Unite: { original: 0, generated: 0 },
+    Moldtelecom: { original: 0, generated: 0 }
+  };
+
   // Basic checks
   if (!sourceFileEl.files.length) {
     errorMsgEl.textContent = 'Vă rugăm să încărcați un fișier sursă.';
@@ -215,21 +223,18 @@ async function generateNumbers() {
 
   for (const row of sourceData) {
     processed++;
-    processedCount.textContent = processed;
-    generatedCount.textContent = generated;
-    rejectedCount.textContent = rejected;
-
     const baseNumber = cleanSourceNumber(row.Phone);
     if (!baseNumber) continue;
 
-    // Add original number with "Original" tip
+    // Add original number and update operator count
     generatedNumbers.push({
       Phone: baseNumber,
       Operator: row.Operator,
       Tip: 'Original'
     });
+    operatorCounts[row.Operator].original++;
 
-    // Generate variations with "Generat" tip
+    // Generate variations
     for (let i = 0; i < variations; i++) {
       const newNumber = generateNumberVariation(baseNumber, digitsToVary, row.Operator);
       if (newNumber && !blacklistSet.has(newNumber)) {
@@ -239,10 +244,26 @@ async function generateNumbers() {
           Tip: 'Generat'
         });
         generated++;
+        operatorCounts[row.Operator].generated++;
       } else {
         rejected++;
       }
     }
+
+    // Update all counters
+    processedCount.textContent = processed;
+    generatedCount.textContent = generated;
+    rejectedCount.textContent = rejected;
+
+    // Update operator-specific counts
+    document.getElementById('orangeOriginalCount').textContent = operatorCounts.Orange.original;
+    document.getElementById('orangeGeneratedCount').textContent = operatorCounts.Orange.generated;
+    document.getElementById('moldcellOriginalCount').textContent = operatorCounts.Moldcell.original;
+    document.getElementById('moldcellGeneratedCount').textContent = operatorCounts.Moldcell.generated;
+    document.getElementById('uniteOriginalCount').textContent = operatorCounts.Unite.original;
+    document.getElementById('uniteGeneratedCount').textContent = operatorCounts.Unite.generated;
+    document.getElementById('moldtelecomOriginalCount').textContent = operatorCounts.Moldtelecom.original;
+    document.getElementById('moldtelecomGeneratedCount').textContent = operatorCounts.Moldtelecom.generated;
   }
 
   return generatedNumbers;

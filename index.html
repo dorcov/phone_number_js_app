@@ -53,10 +53,34 @@
 
     <!-- Simplified summary section -->
     <div id="summary-section" class="hidden">
-      <h3>Sumar:</h3>
-      <p>Numere procesate: <span id="processedCount">0</span></p>
-      <p>Numere generate: <span id="generatedCount">0</span></p>
-      <p>Numere respinse: <span id="rejectedCount">0</span></p>
+      <h3>Sumar General:</h3>
+      <p>Total numere procesate: <span id="processedCount">0</span></p>
+      <p>Total numere generate: <span id="generatedCount">0</span></p>
+      <p>Total numere respinse: <span id="rejectedCount">0</span></p>
+
+      <h3>Statistici pe Operatori:</h3>
+      <div id="operatorStats">
+        <div class="operator-stat">
+          <h4>Orange</h4>
+          <p>Originale: <span id="orangeOriginalCount">0</span></p>
+          <p>Generate: <span id="orangeGeneratedCount">0</span></p>
+        </div>
+        <div class="operator-stat">
+          <h4>Moldcell</h4>
+          <p>Originale: <span id="moldcellOriginalCount">0</span></p>
+          <p>Generate: <span id="moldcellGeneratedCount">0</span></p>
+        </div>
+        <div class="operator-stat">
+          <h4>Unite</h4>
+          <p>Originale: <span id="uniteOriginalCount">0</span></p>
+          <p>Generate: <span id="uniteGeneratedCount">0</span></p>
+        </div>
+        <div class="operator-stat">
+          <h4>Moldtelecom</h4>
+          <p>Originale: <span id="moldtelecomOriginalCount">0</span></p>
+          <p>Generate: <span id="moldtelecomGeneratedCount">0</span></p>
+        </div>
+      </div>
     </div>
   
     <button id="generateBtn">Generează</button>
