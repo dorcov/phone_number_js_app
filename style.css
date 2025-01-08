@@ -59,3 +59,49 @@ button:hover {
 .hidden {
   display: none;
 }
+
+/* New Styles for Additional Controls */
+select[multiple] {
+  width: 100%;
+  height: 100px;
+  margin: 10px 0;
+}
+
+.checkbox-group {
+  margin: 15px 0;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.checkbox-group label {
+  display: block;
+  margin: 5px 0;
+  font-size: 0.9em;
+}
+
+#progress-section {
+  margin: 15px 0;
+  text-align: center;
+}
+
+progress {
+  width: 100%;
+  height: 20px;
+}
+
+#progressText {
+  display: inline-block;
+  margin-left: 10px;
+}
+
+#summary-section {
+  margin: 15px 0;
+  padding: 10px;
+  background: #e8f5e9;
+  border-radius: 4px;
+}
+
+#summary-section h3 {
+  margin-top: 0;
+}

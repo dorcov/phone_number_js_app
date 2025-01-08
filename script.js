@@ -82,6 +82,15 @@ function generateNumberVariation(baseNumber, digitsToVary, operator) {
       break;
     }
   }
+
+  if (document.getElementById('validateSequential').checked && isSequentialNumber(newNumber)) {
+    return null;
+  }
+  
+  if (document.getElementById('validateRepeating').checked && hasRepeatingDigits(newNumber)) {
+    return null;
+  }
+
   return finalValid ? newNumber : null;
 }
 
@@ -105,6 +114,27 @@ function readExcelFile(file) {
   });
 }
 
+// Add new validation functions
+function isSequentialNumber(number) {
+  const digits = number.slice(2).split(''); // Skip operator prefix
+  let ascending = true;
+  let descending = true;
+  
+  for(let i = 1; i < digits.length; i++) {
+    if(parseInt(digits[i]) !== parseInt(digits[i-1]) + 1) ascending = false;
+    if(parseInt(digits[i]) !== parseInt(digits[i-1]) - 1) descending = false;
+  }
+  
+  return ascending || descending;
+}
+
+function hasRepeatingDigits(number) {
+  const digits = number.slice(2).split(''); // Skip operator prefix
+  return digits.some((digit, index) => 
+    digits.slice(index + 1, index + 3).every(d => d === digit)
+  );
+}
+
 /************************************************
  * 3) Main Logic
  ***********************************************/
@@ -120,13 +150,13 @@ async function generateNumbers() {
 
   // Basic checks
   if (!sourceFileEl.files.length) {
-    errorMsgEl.textContent = 'Please upload a source file.';
+    errorMsgEl.textContent = 'Vă rugăm să încărcați un fișier sursă.';
     return null;
   }
   const variations = parseInt(variationsEl.value, 10);
   const digitsToVary = parseInt(digitsToVaryEl.value, 10);
   if (isNaN(variations) || isNaN(digitsToVary) || digitsToVary < 1 || digitsToVary > 6) {
-    errorMsgEl.textContent = 'Invalid number of digits to vary (must be 1-6).';
+    errorMsgEl.textContent = 'Număr invalid de cifre de variat (trebuie să fie între 1-6).';
     return null;
   }
 
@@ -140,7 +170,7 @@ async function generateNumbers() {
       blacklistData = await readExcelFile(blacklistFileEl.files[0]);
     }
   } catch (err) {
-    errorMsgEl.textContent = 'Error reading Excel files: ' + err.message;
+    errorMsgEl.textContent = 'Eroare la citirea fișierelor Excel: ' + err.message;
     return null;
   }
 
@@ -153,7 +183,37 @@ async function generateNumbers() {
 
   const generatedNumbers = [];
 
+  const progressBar = document.getElementById('generateProgress');
+  const progressText = document.getElementById('progressText');
+  const processedCount = document.getElementById('processedCount');
+  const generatedCount = document.getElementById('generatedCount');
+  const rejectedCount = document.getElementById('rejectedCount');
+  
+  document.getElementById('progress-section').classList.remove('hidden');
+  document.getElementById('summary-section').classList.remove('hidden');
+
+  let processed = 0;
+  let generated = 0;
+  let rejected = 0;
+
+  // Filter by selected operators
+  const selectedOperators = Array.from(document.getElementById('operatorFilter').selectedOptions)
+    .map(option => option.value);
+  
+  sourceData = sourceData.filter(row => 
+    selectedOperators.length === 0 || selectedOperators.includes(row.Operator)
+  );
+
   for (const row of sourceData) {
+    processed++;
+    // Update progress
+    const progress = (processed / sourceData.length) * 100;
+    progressBar.value = progress;
+    progressText.textContent = `${Math.round(progress)}%`;
+    processedCount.textContent = processed;
+    generatedCount.textContent = generated;
+    rejectedCount.textContent = rejected;
+
     const baseNumber = cleanSourceNumber(row.Phone);
     if (!baseNumber) continue;
 
@@ -166,6 +226,9 @@ async function generateNumbers() {
           Operator: row.Operator,
           Tip: formatTipDate(row.Tip)
         });
+        generated++;
+      } else {
+        rejected++;
       }
     }
   }
@@ -179,8 +242,8 @@ async function generateNumbers() {
 function downloadExcel(jsonData) {
   const worksheet = XLSX.utils.json_to_sheet(jsonData);
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'GeneratedNumbers');
-  XLSX.writeFile(workbook, 'GeneratedNumbers.xlsx');
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'NumereGenerate');
+  XLSX.writeFile(workbook, 'NumereGenerate.xlsx');
 }
 
 /************************************************
