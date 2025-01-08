@@ -148,6 +148,14 @@ function hasRepeatingDigits(number) {
   return false; // No sequence of 3 or more repeating digits found
 }
 
+function getRandomOperator() {
+  const r = Math.random() * 100;
+  if (r < 35) return 'Moldcell';
+  if (r < 46) return 'Moldtelecom';
+  if (r < 92) return 'Orange';
+  return 'Unite';
+}
+
 /************************************************
  * 3) Main Logic
  ***********************************************/
@@ -227,7 +235,7 @@ async function generateNumbers() {
     const baseNumber = cleanSourceNumber(row.Phone);
     if (!baseNumber) continue;
 
-    const operatorName = row.Operator || fallbackOperatorEl.value;
+    const operatorName = row.Operator || getRandomOperator();
 
     // Add original number and update operator count
     generatedNumbers.push({
