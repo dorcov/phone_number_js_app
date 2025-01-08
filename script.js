@@ -268,8 +268,13 @@ document.getElementById('generateBtn').addEventListener('click', async () => {
   }
 });
 
-document.getElementById('downloadBtn').addEventListener('click', () => {
-  // ...existing code...
+// Add template button event listeners
+document.getElementById('sourceTemplateBtn').addEventListener('click', () => {
+  generateSourceTemplate();
+});
+
+document.getElementById('blacklistTemplateBtn').addEventListener('click', () => {
+  generateBlacklistTemplate();
 });
 
 /************************************************
