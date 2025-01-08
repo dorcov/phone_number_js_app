@@ -109,21 +109,88 @@ function readExcelFile(file) {
  * 3) Main Logic
  ***********************************************/
 async function generateNumbers() {
-  // ...existing code...
+  const sourceFileEl = document.getElementById('sourceFile');
+  const blacklistFileEl = document.getElementById('blacklistFile');
+  const variationsEl = document.getElementById('variations');
+  const digitsToVaryEl = document.getElementById('digitsToVary');
+  const errorMsgEl = document.getElementById('errorMsg');
+
+  // Clear error
+  errorMsgEl.textContent = '';
+
+  // Basic checks
+  if (!sourceFileEl.files.length) {
+    errorMsgEl.textContent = 'Please upload a source file.';
+    return null;
+  }
+  const variations = parseInt(variationsEl.value, 10);
+  const digitsToVary = parseInt(digitsToVaryEl.value, 10);
+  if (isNaN(variations) || isNaN(digitsToVary) || digitsToVary < 1 || digitsToVary > 6) {
+    errorMsgEl.textContent = 'Invalid number of digits to vary (must be 1-6).';
+    return null;
+  }
+
+  let sourceData = [];
+  let blacklistData = [];
+
+  // Read Excel files
+  try {
+    sourceData = await readExcelFile(sourceFileEl.files[0]);
+    if (blacklistFileEl.files.length) {
+      blacklistData = await readExcelFile(blacklistFileEl.files[0]);
+    }
+  } catch (err) {
+    errorMsgEl.textContent = 'Error reading Excel files: ' + err.message;
+    return null;
+  }
+
+  // Build blacklist Set
+  const blacklistSet = new Set();
+  for (const row of blacklistData) {
+    const cleaned = cleanSourceNumber(row.Phone);
+    if (cleaned) blacklistSet.add(cleaned);
+  }
+
+  const generatedNumbers = [];
+
+  for (const row of sourceData) {
+    const baseNumber = cleanSourceNumber(row.Phone);
+    if (!baseNumber) continue;
+
+    for (let i = 0; i < variations; i++) {
+      const newNumber = generateNumberVariation(baseNumber, digitsToVary, row.Operator);
+      if (newNumber && !blacklistSet.has(newNumber)) {
+        generatedNumbers.push({
+          Original: baseNumber,
+          NewNumber: newNumber,
+          Operator: row.Operator,
+          Tip: formatTipDate(row.Tip)
+        });
+      }
+    }
+  }
+
+  return generatedNumbers;
 }
 
 /************************************************
  * 4) Excel Download Function
  ***********************************************/
 function downloadExcel(jsonData) {
-  // ...existing code...
+  const worksheet = XLSX.utils.json_to_sheet(jsonData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'GeneratedNumbers');
+  XLSX.writeFile(workbook, 'GeneratedNumbers.xlsx');
 }
 
 /************************************************
  * 5) Event Listeners
  ***********************************************/
 document.getElementById('generateBtn').addEventListener('click', async () => {
-  // ...existing code...
+  const generatedNumbers = await generateNumbers();
+  if (generatedNumbers) {
+    downloadExcel(generatedNumbers);
+  }
 });
 
 document.getElementById('downloadBtn').addEventListener('click', () => {
