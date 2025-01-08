@@ -130,9 +130,22 @@ function isSequentialNumber(number) {
 
 function hasRepeatingDigits(number) {
   const digits = number.slice(2).split(''); // Skip operator prefix
-  return digits.some((digit, index) => 
-    digits.slice(index + 1, index + 3).every(d => d === digit)
-  );
+  let repeatCount = 1;
+  let lastDigit = digits[0];
+  
+  for (let i = 1; i < digits.length; i++) {
+    if (digits[i] === lastDigit) {
+      repeatCount++;
+      if (repeatCount >= 3) {
+        return true; // Found 3 or more repeating digits
+      }
+    } else {
+      repeatCount = 1;
+      lastDigit = digits[i];
+    }
+  }
+  
+  return false; // No sequence of 3 or more repeating digits found
 }
 
 /************************************************
