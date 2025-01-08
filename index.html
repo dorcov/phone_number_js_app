@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Phone Number Generator (JavaScript)</title>
+  <!-- Link to your CSS -->
+  <link rel="stylesheet" href="styles.css">
+  <!-- Include SheetJS (xlsx.full.min.js) from CDN for Excel processing -->
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <h1>Phone Number Generator (JavaScript)</h1>
+  
+  <div id="form-section">
+    <label for="sourceFile">Source Numbers (Excel):</label>
+    <input type="file" id="sourceFile" accept=".xlsx,.xls" />
+
+    <label for="blacklistFile">Blacklist Numbers (Excel) [Optional]:</label>
+    <input type="file" id="blacklistFile" accept=".xlsx,.xls" />
+
+    <label for="variations">Variations per number:</label>
+    <input type="number" id="variations" min="1" value="5" />
+
+    <label for="digitsToVary">Number of digits to vary (1-6):</label>
+    <input type="number" id="digitsToVary" min="1" max="6" value="3" />
+  
+    <button id="generateBtn">Generate</button>
+    <div class="error" id="errorMsg"></div>
+  </div>
+
+  <div class="output hidden" id="output-section">
+    <p>Generation complete! Click below to download:</p>
+    <button id="downloadBtn">Download Excel</button>
+  </div>
+
+  <!-- Link to your main JavaScript -->
+  <script src="script.js"></script>
+</body>
+</html>

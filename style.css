@@ -1,0 +1,61 @@
+/* styles.css */
+
+/* Body/Container */
+body {
+  font-family: Arial, sans-serif;
+  max-width: 600px;
+  margin: 40px auto;
+  background: #f2f2f2;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+h1 {
+  text-align: center;
+}
+
+/* Form Inputs and Labels */
+label {
+  display: block;
+  margin-top: 10px;
+}
+
+input[type="file"],
+input[type="number"],
+button {
+  display: block;
+  margin-top: 5px;
+  padding: 8px;
+  width: 100%;
+  font-size: 1rem;
+}
+
+button {
+  cursor: pointer;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  margin-top: 20px;
+}
+
+button:hover {
+  background: #45a049;
+}
+
+/* Error Messages and Output Section */
+.error {
+  color: red;
+}
+
+.output {
+  margin-top: 20px;
+  background: #fff;
+  padding: 10px;
+  border-radius: 6px;
+}
+
+/* Utility Class for Hiding Elements */
+.hidden {
+  display: none;
+}
