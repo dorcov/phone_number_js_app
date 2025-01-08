@@ -278,3 +278,42 @@ document.getElementById('generateBtn').addEventListener('click', async () => {
 document.getElementById('downloadBtn').addEventListener('click', () => {
   // ...existing code...
 });
+
+/************************************************
+ * 6) Template Generation Functions
+ ***********************************************/
+function generateSourceTemplate() {
+  const template = [
+    {
+      Phone: '60123456',
+      Operator: 'Orange',
+      Tip: 'Original'
+    },
+    {
+      Phone: '76123456',
+      Operator: 'Moldcell',
+      Tip: 'Original'
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(template);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Template');
+  XLSX.writeFile(wb, 'template_sursa.xlsx');
+}
+
+function generateBlacklistTemplate() {
+  const template = [
+    {
+      Phone: '60123456'
+    },
+    {
+      Phone: '76123456'
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(template);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Template');
+  XLSX.writeFile(wb, 'template_blacklist.xlsx');
+}
