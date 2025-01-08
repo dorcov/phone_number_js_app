@@ -160,6 +160,7 @@ async function generateNumbers() {
   const processedCount = document.getElementById('processedCount');
   const generatedCount = document.getElementById('generatedCount');
   const rejectedCount = document.getElementById('rejectedCount');
+  const fallbackOperatorEl = document.getElementById('fallbackOperator');
 
   // Clear error and show summary
   errorMsgEl.textContent = '';
@@ -226,25 +227,27 @@ async function generateNumbers() {
     const baseNumber = cleanSourceNumber(row.Phone);
     if (!baseNumber) continue;
 
+    const operatorName = row.Operator || fallbackOperatorEl.value;
+
     // Add original number and update operator count
     generatedNumbers.push({
       Phone: baseNumber,
-      Operator: row.Operator,
+      Operator: operatorName,
       Tip: 'Original'
     });
-    operatorCounts[row.Operator].original++;
+    operatorCounts[operatorName].original++;
 
     // Generate variations
     for (let i = 0; i < variations; i++) {
-      const newNumber = generateNumberVariation(baseNumber, digitsToVary, row.Operator);
+      const newNumber = generateNumberVariation(baseNumber, digitsToVary, operatorName);
       if (newNumber && !blacklistSet.has(newNumber)) {
         generatedNumbers.push({
           Phone: newNumber,
-          Operator: row.Operator,
+          Operator: operatorName,
           Tip: 'Generat'
         });
         generated++;
-        operatorCounts[row.Operator].generated++;
+        operatorCounts[operatorName].generated++;
       } else {
         rejected++;
       }
