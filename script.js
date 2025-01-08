@@ -219,7 +219,6 @@ async function generateNumbers() {
 
   for (const row of sourceData) {
     processed++;
-    // Update progress
     const progress = (processed / sourceData.length) * 100;
     progressBar.value = progress;
     progressText.textContent = `${Math.round(progress)}%`;
@@ -230,14 +229,21 @@ async function generateNumbers() {
     const baseNumber = cleanSourceNumber(row.Phone);
     if (!baseNumber) continue;
 
+    // Add original number with "Original" tip
+    generatedNumbers.push({
+      Phone: baseNumber,
+      Operator: row.Operator,
+      Tip: 'Original'
+    });
+
+    // Generate variations with "Generat" tip
     for (let i = 0; i < variations; i++) {
       const newNumber = generateNumberVariation(baseNumber, digitsToVary, row.Operator);
       if (newNumber && !blacklistSet.has(newNumber)) {
         generatedNumbers.push({
-          Original: baseNumber,
-          NewNumber: newNumber,
+          Phone: newNumber,
           Operator: row.Operator,
-          Tip: formatTipDate(row.Tip)
+          Tip: 'Generat'
         });
         generated++;
       } else {
