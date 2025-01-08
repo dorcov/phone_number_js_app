@@ -165,9 +165,9 @@ select[multiple] {
 }
 
 /* Operator-specific colors */
-.operator-stat:nth-child(1) { border-color: #FF9800; } /* Orange - brighter */
-.operator-stat:nth-child(2) { border-color: #f44336; } /* Moldcell - brighter */
-.operator-stat:nth-child(3) { border-color: #9575CD; } /* Unite - brighter */
+.operator-stat:nth-child(1) { border-color: #ff9900; } /* Orange - brighter */
+.operator-stat:nth-child(2) { border-color: #7f00ff; } /* Moldcell - brighter */
+.operator-stat:nth-child(3) { border-color: #ff0000; } /* Unite - brighter */
 .operator-stat:nth-child(4) { border-color: #66BB6A; } /* Moldtelecom - brighter */
 
 /* Better focus styles for dark mode */
