@@ -157,9 +157,18 @@ async function generateNumbers() {
   const variationsEl = document.getElementById('variations');
   const digitsToVaryEl = document.getElementById('digitsToVary');
   const errorMsgEl = document.getElementById('errorMsg');
+  const processedCount = document.getElementById('processedCount');
+  const generatedCount = document.getElementById('generatedCount');
+  const rejectedCount = document.getElementById('rejectedCount');
 
-  // Clear error
+  // Clear error and show summary
   errorMsgEl.textContent = '';
+  document.getElementById('summary-section').classList.remove('hidden');
+
+  // Initialize counters
+  let processed = 0;
+  let generated = 0;
+  let rejected = 0;
 
   // Basic checks
   if (!sourceFileEl.files.length) {
@@ -196,19 +205,6 @@ async function generateNumbers() {
 
   const generatedNumbers = [];
 
-  const progressBar = document.getElementById('generateProgress');
-  const progressText = document.getElementById('progressText');
-  const processedCount = document.getElementById('processedCount');
-  const generatedCount = document.getElementById('generatedCount');
-  const rejectedCount = document.getElementById('rejectedCount');
-  
-  document.getElementById('progress-section').classList.remove('hidden');
-  document.getElementById('summary-section').classList.remove('hidden');
-
-  let processed = 0;
-  let generated = 0;
-  let rejected = 0;
-
   // Filter by selected operators
   const selectedOperators = Array.from(document.getElementById('operatorFilter').selectedOptions)
     .map(option => option.value);
@@ -219,9 +215,6 @@ async function generateNumbers() {
 
   for (const row of sourceData) {
     processed++;
-    const progress = (processed / sourceData.length) * 100;
-    progressBar.value = progress;
-    progressText.textContent = `${Math.round(progress)}%`;
     processedCount.textContent = processed;
     generatedCount.textContent = generated;
     rejectedCount.textContent = rejected;

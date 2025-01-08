@@ -80,11 +80,6 @@ select[multiple] {
   font-size: 0.9em;
 }
 
-#progressText {
-  display: inline-block;
-  margin-left: 10px;
-}
-
 #summary-section {
   margin: 15px 0;
   padding: 10px;
