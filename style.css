@@ -1,11 +1,25 @@
 /* styles.css */
 
+:root {
+  --bg-color: #1a1a1a;
+  --text-color: #ffffff;
+  --input-bg: #2d2d2d;
+  --border-color: #404040;
+  --button-bg: #2196F3;
+  --button-hover: #1976D2;
+  --error-color: #ff6b6b;
+  --success-bg: #1b5e20;
+  --card-bg: #2d2d2d;
+  --header-color: #4CAF50;
+}
+
 /* Body/Container */
 body {
   font-family: Arial, sans-serif;
   max-width: 600px;
   margin: 40px auto;
-  background: #f2f2f2;
+  background: var(--bg-color);
+  color: var(--text-color);
   padding: 20px;
   border-radius: 8px;
 }
@@ -22,17 +36,21 @@ label {
 
 input[type="file"],
 input[type="number"],
+select[multiple],
 button {
   display: block;
   margin-top: 5px;
   padding: 8px;
   width: 100%;
   font-size: 1rem;
+  background: var(--input-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
 }
 
 button {
   cursor: pointer;
-  background: #4CAF50;
+  background: var(--button-bg);
   color: white;
   border: none;
   border-radius: 4px;
@@ -40,19 +58,21 @@ button {
 }
 
 button:hover {
-  background: #45a049;
+  background: var(--button-hover);
 }
 
 /* Error Messages and Output Section */
 .error {
-  color: red;
+  color: var(--error-color);
 }
 
 .output {
   margin-top: 20px;
-  background: #fff;
+  background: var(--card-bg);
   padding: 10px;
   border-radius: 6px;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
 }
 
 /* Utility Class for Hiding Elements */
@@ -70,8 +90,9 @@ select[multiple] {
 .checkbox-group {
   margin: 15px 0;
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
+  background: var(--card-bg);
 }
 
 .checkbox-group label {
@@ -83,8 +104,9 @@ select[multiple] {
 #summary-section {
   margin: 15px 0;
   padding: 10px;
-  background: #e8f5e9;
+  background: var(--success-bg);
   border-radius: 4px;
+  color: var(--text-color);
 }
 
 #summary-section h3 {
@@ -95,8 +117,21 @@ select[multiple] {
   margin-bottom: 20px;
 }
 
+.file-input-group input[type="file"]::file-selector-button {
+  background: var(--button-bg);
+  color: var(--text-color);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.file-input-group input[type="file"]::file-selector-button:hover {
+  background: var(--button-hover);
+}
+
 .template-btn {
-  background: #2196F3;
+  background: var(--button-bg);
   color: white;
   padding: 5px 10px;
   margin-top: 5px;
@@ -106,7 +141,7 @@ select[multiple] {
 }
 
 .template-btn:hover {
-  background: #1976D2;
+  background: var(--button-hover);
 }
 
 #operatorStats {
@@ -117,10 +152,12 @@ select[multiple] {
 }
 
 .operator-stat {
-  background: white;
+  background: var(--card-bg);
   padding: 10px;
   border-radius: 4px;
   border-left: 4px solid;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
 }
 
 .operator-stat h4 {
@@ -128,7 +165,15 @@ select[multiple] {
 }
 
 /* Operator-specific colors */
-.operator-stat:nth-child(1) { border-color: #FF6B00; } /* Orange */
-.operator-stat:nth-child(2) { border-color: #E31E24; } /* Moldcell */
-.operator-stat:nth-child(3) { border-color: #7B68EE; } /* Unite */
-.operator-stat:nth-child(4) { border-color: #4CAF50; } /* Moldtelecom */
+.operator-stat:nth-child(1) { border-color: #FF9800; } /* Orange - brighter */
+.operator-stat:nth-child(2) { border-color: #f44336; } /* Moldcell - brighter */
+.operator-stat:nth-child(3) { border-color: #9575CD; } /* Unite - brighter */
+.operator-stat:nth-child(4) { border-color: #66BB6A; } /* Moldtelecom - brighter */
+
+/* Better focus styles for dark mode */
+input:focus,
+select:focus,
+button:focus {
+  outline: 2px solid var(--button-bg);
+  outline-offset: 2px;
+}
