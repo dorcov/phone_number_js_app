@@ -373,6 +373,48 @@ async function generateNumbers() {
     );
   }
 
+  // După ce am procesat 'sourceData':
+  const operatorCurrentCounts = {};
+  for (const op of ALL_OPERATORS) {
+    operatorCurrentCounts[op] = operatorCounts[op].original; 
+  }
+  const maxCount = Math.max(...Object.values(operatorCurrentCounts));
+
+  // Generăm semințe pentru operatorii sub 'maxCount'
+  for (const op of ALL_OPERATORS) {
+    const deficit = maxCount - operatorCurrentCounts[op];
+    if (deficit > 0) {
+      // Câte semințe: de ex. deficit / variations (ajustat)
+      const seedsToGenerate = Math.ceil(deficit / variations);
+      for (let i = 0; i < seedsToGenerate; i++) {
+        const randomPrefix = OPERATOR_PREFIXES[op][Math.floor(Math.random() * OPERATOR_PREFIXES[op].length)];
+        let randomNumber = randomPrefix;
+        while (randomNumber.length < 8) {
+          randomNumber += Math.floor(Math.random() * 10).toString();
+        }
+        randomNumber = randomNumber.slice(0, 8);
+
+        generatedNumbers.push({
+          Phone: randomNumber,
+          Operator: op,
+          Tip: 'Original (Auto-Seed)'
+        });
+        operatorCounts[op].original++;
+        // Generăm variații pentru acest seed
+        await generateVariationsForOperator(
+          randomNumber,
+          op,
+          variations,
+          digitsToVary,
+          blacklistSet,
+          generatedNumbers,
+          operatorCounts,
+          counters
+        );
+      }
+    }
+  }
+
   // Update final counters
   processedCount.textContent = processed;
   generatedCount.textContent = counters.generated;
