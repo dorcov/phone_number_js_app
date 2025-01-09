@@ -393,8 +393,11 @@ async function generateVariationsForOperator(
         Operator: operator,
         Tip: 'Generat'
       });
+      generated++; // Adăugăm această linie pentru a incrementa contorul global
       operatorCounts[operator].generated++;
       successfulVariations++;
+    } else {
+      rejected++; // Adăugăm și această linie pentru a contoriza respingerile
     }
   }
 }
