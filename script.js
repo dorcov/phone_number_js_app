@@ -256,6 +256,13 @@ async function generateNumbers() {
     Moldtelecom: { original: 0, generated: 0 }
   };
 
+  // Initialize counters object
+  const counters = {
+    processed: 0,
+    generated: 0,
+    rejected: 0
+  };
+
   // Basic checks
   if (!sourceFileEl.files.length) {
     errorMsgEl.textContent = 'Vă rugăm să încărcați un fișier sursă.';
@@ -321,7 +328,8 @@ async function generateNumbers() {
       digitsToVary, 
       blacklistSet, 
       generatedNumbers, 
-      operatorCounts
+      operatorCounts,
+      counters // Adăugăm counters ca parametru
     );
   }
 
@@ -350,14 +358,15 @@ async function generateNumbers() {
       digitsToVary, 
       blacklistSet, 
       generatedNumbers, 
-      operatorCounts
+      operatorCounts,
+      counters // Adăugăm counters ca parametru
     );
   }
 
   // Update final counters
   processedCount.textContent = processed;
-  generatedCount.textContent = generated;
-  rejectedCount.textContent = rejected;
+  generatedCount.textContent = counters.generated;
+  rejectedCount.textContent = counters.rejected;
 
   // Update operator-specific counts
   for (const op of ALL_OPERATORS) {
@@ -370,7 +379,7 @@ async function generateNumbers() {
   return generatedNumbers;
 }
 
-// Add this new helper function
+// Add this new helper function with counters as parameters
 async function generateVariationsForOperator(
   baseNumber, 
   operator, 
@@ -378,7 +387,8 @@ async function generateVariationsForOperator(
   digitsToVary, 
   blacklistSet, 
   generatedNumbers, 
-  operatorCounts
+  operatorCounts,
+  counters // Adăugăm parametrul counters
 ) {
   let successfulVariations = 0;
   let maxAttempts = variations * 3;
@@ -393,11 +403,11 @@ async function generateVariationsForOperator(
         Operator: operator,
         Tip: 'Generat'
       });
-      generated++; // Adăugăm această linie pentru a incrementa contorul global
+      counters.generated++; // Folosim counters.generated în loc de generated
       operatorCounts[operator].generated++;
       successfulVariations++;
     } else {
-      rejected++; // Adăugăm și această linie pentru a contoriza respingerile
+      counters.rejected++; // Folosim counters.rejected în loc de rejected
     }
   }
 }
