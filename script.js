@@ -350,7 +350,8 @@ async function generateNumbers() {
 
   for (const op of selectedMissingOps) {
     const prefix = OPERATOR_PREFIXES[op][0];
-    const baseNumber = prefix + '000000'.slice(prefix.length);
+    const neededZeros = 8 - prefix.length;
+    const baseNumber = prefix + '0'.repeat(neededZeros);
     
     processed++;
     generatedNumbers.push({
