@@ -106,8 +106,17 @@ function readExcelFile(file) {
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+        
+        // Reset previous stats
+        document.querySelectorAll('#operatorStats span').forEach(span => span.textContent = '0');
+        document.getElementById('generatedCount').textContent = '0';
+        document.getElementById('rejectedCount').textContent = '0';
+        
+        // Update UI with new data
+        updateSourceStats(jsonData);
         const missingOps = detectMissingOperators(jsonData);
         showMissingOperatorsUI(missingOps);
+        
         resolve(jsonData);
       } catch (err) {
         reject(err);
@@ -188,6 +197,32 @@ function showMissingOperatorsUI(missingOps) {
   });
   
   document.getElementById('missingOperators').classList.remove('hidden');
+}
+
+// Add after detectMissingOperators function
+function updateSourceStats(sourceData) {
+  const operatorStats = {
+    Orange: 0,
+    Moldcell: 0,
+    Unite: 0,
+    Moldtelecom: 0
+  };
+
+  sourceData.forEach(row => {
+    if (operatorStats.hasOwnProperty(row.Operator)) {
+      operatorStats[row.Operator]++;
+    }
+  });
+
+  // Update UI stats
+  document.getElementById('orangeOriginalCount').textContent = operatorStats.Orange;
+  document.getElementById('moldcellOriginalCount').textContent = operatorStats.Moldcell;
+  document.getElementById('uniteOriginalCount').textContent = operatorStats.Unite;
+  document.getElementById('moldtelecomOriginalCount').textContent = operatorStats.Moldtelecom;
+  
+  // Show summary section
+  document.getElementById('summary-section').classList.remove('hidden');
+  document.getElementById('processedCount').textContent = sourceData.length;
 }
 
 /************************************************
@@ -389,6 +424,17 @@ document.getElementById('sourceTemplateBtn').addEventListener('click', () => {
 
 document.getElementById('blacklistTemplateBtn').addEventListener('click', () => {
   generateBlacklistTemplate();
+});
+
+// Add source file change event listener
+document.getElementById('sourceFile').addEventListener('change', async (event) => {
+  if (event.target.files.length) {
+    try {
+      await readExcelFile(event.target.files[0]);
+    } catch (err) {
+      document.getElementById('errorMsg').textContent = 'Eroare la citirea fișierului: ' + err.message;
+    }
+  }
 });
 
 /************************************************
