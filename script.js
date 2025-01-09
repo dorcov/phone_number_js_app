@@ -299,48 +299,7 @@ async function generateNumbers() {
     selectedOperators.length === 0 || selectedOperators.includes(row.Operator)
   );
 
-  // After reading source data, before generation loop
-  const missingOps = detectMissingOperators(sourceData);
-  const selectedMissingOps = missingOps.filter(op => 
-    document.getElementById(`include${op}`)?.checked
-  );
-
-  // Generate base numbers for selected missing operators
-  for (const op of selectedMissingOps) {
-    const prefix = OPERATOR_PREFIXES[op][0]; // Use first prefix
-    const baseNumber = prefix + '000000'.slice(prefix.length);
-    
-    // Add dummy original entry
-    generatedNumbers.push({
-      Phone: baseNumber,
-      Operator: op,
-      Tip: 'Original (Auto)'
-    });
-    operatorCounts[op].original++;
-
-    // Generate variations for this operator
-    let successfulVariations = 0;
-    let maxAttempts = variations * 3;
-    let attempts = 0;
-
-    while (successfulVariations < variations && attempts < maxAttempts) {
-      attempts++;
-      const newNumber = generateNumberVariation(baseNumber, digitsToVary, op);
-      if (newNumber && !blacklistSet.has(newNumber)) {
-        generatedNumbers.push({
-          Phone: newNumber,
-          Operator: op,
-          Tip: 'Generat'
-        });
-        generated++;
-        operatorCounts[op].generated++;
-        successfulVariations++;
-      } else {
-        rejected++;
-      }
-    }
-  }
-
+  // Process source data first
   for (const row of sourceData) {
     processed++;
     const baseNumber = cleanSourceNumber(row.Phone);
@@ -348,7 +307,6 @@ async function generateNumbers() {
 
     const operatorName = row.Operator || getRandomOperator();
 
-    // Add original number and update operator count
     generatedNumbers.push({
       Phone: baseNumber,
       Operator: operatorName,
@@ -356,45 +314,89 @@ async function generateNumbers() {
     });
     operatorCounts[operatorName].original++;
 
-    // Generate variations
-    let successfulVariations = 0;
-    let maxAttempts = variations * 3; // Prevent infinite loops
-    let attempts = 0;
+    await generateVariationsForOperator(
+      baseNumber, 
+      operatorName, 
+      variations, 
+      digitsToVary, 
+      blacklistSet, 
+      generatedNumbers, 
+      operatorCounts
+    );
+  }
 
-    while (successfulVariations < variations && attempts < maxAttempts) {
-      attempts++;
-      const newNumber = generateNumberVariation(baseNumber, digitsToVary, operatorName);
-      if (newNumber && !blacklistSet.has(newNumber)) {
-        generatedNumbers.push({
-          Phone: newNumber,
-          Operator: operatorName,
-          Tip: 'Generat'
-        });
-        generated++;
-        operatorCounts[operatorName].generated++;
-        successfulVariations++;
-      } else {
-        rejected++;
-      }
-    }
+  // Then process missing operators
+  const missingOps = detectMissingOperators(sourceData);
+  const selectedMissingOps = missingOps.filter(op => 
+    document.getElementById(`include${op}`)?.checked
+  );
 
-    // Update all counters
-    processedCount.textContent = processed;
-    generatedCount.textContent = generated;
-    rejectedCount.textContent = rejected;
+  for (const op of selectedMissingOps) {
+    const prefix = OPERATOR_PREFIXES[op][0];
+    const baseNumber = prefix + '000000'.slice(prefix.length);
+    
+    processed++;
+    generatedNumbers.push({
+      Phone: baseNumber,
+      Operator: op,
+      Tip: 'Original (Auto)'
+    });
+    operatorCounts[op].original++;
 
-    // Update operator-specific counts
-    document.getElementById('orangeOriginalCount').textContent = operatorCounts.Orange.original;
-    document.getElementById('orangeGeneratedCount').textContent = operatorCounts.Orange.generated;
-    document.getElementById('moldcellOriginalCount').textContent = operatorCounts.Moldcell.original;
-    document.getElementById('moldcellGeneratedCount').textContent = operatorCounts.Moldcell.generated;
-    document.getElementById('uniteOriginalCount').textContent = operatorCounts.Unite.original;
-    document.getElementById('uniteGeneratedCount').textContent = operatorCounts.Unite.generated;
-    document.getElementById('moldtelecomOriginalCount').textContent = operatorCounts.Moldtelecom.original;
-    document.getElementById('moldtelecomGeneratedCount').textContent = operatorCounts.Moldtelecom.generated;
+    await generateVariationsForOperator(
+      baseNumber, 
+      op, 
+      variations, 
+      digitsToVary, 
+      blacklistSet, 
+      generatedNumbers, 
+      operatorCounts
+    );
+  }
+
+  // Update final counters
+  processedCount.textContent = processed;
+  generatedCount.textContent = generated;
+  rejectedCount.textContent = rejected;
+
+  // Update operator-specific counts
+  for (const op of ALL_OPERATORS) {
+    document.getElementById(`${op.toLowerCase()}OriginalCount`).textContent = 
+      operatorCounts[op].original;
+    document.getElementById(`${op.toLowerCase()}GeneratedCount`).textContent = 
+      operatorCounts[op].generated;
   }
 
   return generatedNumbers;
+}
+
+// Add this new helper function
+async function generateVariationsForOperator(
+  baseNumber, 
+  operator, 
+  variations, 
+  digitsToVary, 
+  blacklistSet, 
+  generatedNumbers, 
+  operatorCounts
+) {
+  let successfulVariations = 0;
+  let maxAttempts = variations * 3;
+  let attempts = 0;
+
+  while (successfulVariations < variations && attempts < maxAttempts) {
+    attempts++;
+    const newNumber = generateNumberVariation(baseNumber, digitsToVary, operator);
+    if (newNumber && !blacklistSet.has(newNumber)) {
+      generatedNumbers.push({
+        Phone: newNumber,
+        Operator: operator,
+        Tip: 'Generat'
+      });
+      operatorCounts[operator].generated++;
+      successfulVariations++;
+    }
+  }
 }
 
 /************************************************
