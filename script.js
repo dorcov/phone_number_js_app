@@ -246,7 +246,12 @@ async function generateNumbers() {
     operatorCounts[operatorName].original++;
 
     // Generate variations
-    for (let i = 0; i < variations; i++) {
+    let successfulVariations = 0;
+    let maxAttempts = variations * 3; // Prevent infinite loops
+    let attempts = 0;
+
+    while (successfulVariations < variations && attempts < maxAttempts) {
+      attempts++;
       const newNumber = generateNumberVariation(baseNumber, digitsToVary, operatorName);
       if (newNumber && !blacklistSet.has(newNumber)) {
         generatedNumbers.push({
@@ -256,6 +261,7 @@ async function generateNumbers() {
         });
         generated++;
         operatorCounts[operatorName].generated++;
+        successfulVariations++;
       } else {
         rejected++;
       }
