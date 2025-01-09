@@ -307,13 +307,14 @@ async function generateNumbers() {
 
   const generatedNumbers = [];
 
-  // Filter by selected operators
-  const selectedOperators = Array.from(document.getElementById('operatorFilter').selectedOptions)
-    .map(option => option.value);
-  
-  sourceData = sourceData.filter(row => 
-    selectedOperators.length === 0 || selectedOperators.includes(row.Operator)
-  );
+  // Remove operator filter logic
+  /*
+  // const selectedOperators = Array.from(document.getElementById('operatorFilter').selectedOptions)
+  //   .map(option => option.value);
+  // sourceData = sourceData.filter(row => 
+  //   selectedOperators.length === 0 || selectedOperators.includes(row.Operator)
+  // );
+  */
 
   // Process source data first
   for (const row of sourceData) {
