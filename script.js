@@ -178,6 +178,12 @@ function detectMissingOperators(sourceData) {
 // Add new function to show missing operators UI
 function showMissingOperatorsUI(missingOps) {
   const container = document.getElementById('missingOperatorsList');
+  // Salvăm starea checkbox-urilor existente
+  const existingStates = {};
+  container.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+    existingStates[checkbox.id] = checkbox.checked;
+  });
+  
   container.innerHTML = '';
   
   if (missingOps.length === 0) {
@@ -191,6 +197,9 @@ function showMissingOperatorsUI(missingOps) {
     checkbox.type = 'checkbox';
     checkbox.id = `include${op}`;
     checkbox.value = op;
+    // Restaurăm starea anterioară sau setăm implicit la true
+    checkbox.checked = existingStates[`include${op}`] !== undefined ? 
+      existingStates[`include${op}`] : true;
     label.appendChild(checkbox);
     label.appendChild(document.createTextNode(`Include ${op}`));
     container.appendChild(label);
