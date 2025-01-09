@@ -177,3 +177,26 @@ button:focus {
   outline: 2px solid var(--button-bg);
   outline-offset: 2px;
 }
+
+.alert {
+  background: #2d2d2d;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 15px;
+  margin: 15px 0;
+}
+
+.alert h4 {
+  margin-top: 0;
+  color: var(--button-bg);
+}
+
+#missingOperatorsList label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#missingOperatorsList input[type="checkbox"] {
+  margin: 0;
+}

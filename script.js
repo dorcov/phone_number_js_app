@@ -8,6 +8,8 @@ const OPERATOR_PREFIXES = {
   'Moldtelecom': ['2']
 };
 
+const ALL_OPERATORS = ['Orange', 'Moldcell', 'Unite', 'Moldtelecom'];
+
 /************************************************
  * 2) Utility / Helper Functions
  ***********************************************/
@@ -104,6 +106,8 @@ function readExcelFile(file) {
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+        const missingOps = detectMissingOperators(jsonData);
+        showMissingOperatorsUI(missingOps);
         resolve(jsonData);
       } catch (err) {
         reject(err);
@@ -154,6 +158,36 @@ function getRandomOperator() {
   if (r < 46) return 'Moldtelecom';
   if (r < 92) return 'Orange';
   return 'Unite';
+}
+
+// Add new function to detect missing operators
+function detectMissingOperators(sourceData) {
+  const presentOperators = new Set(sourceData.map(row => row.Operator));
+  return ALL_OPERATORS.filter(op => !presentOperators.has(op));
+}
+
+// Add new function to show missing operators UI
+function showMissingOperatorsUI(missingOps) {
+  const container = document.getElementById('missingOperatorsList');
+  container.innerHTML = '';
+  
+  if (missingOps.length === 0) {
+    document.getElementById('missingOperators').classList.add('hidden');
+    return;
+  }
+
+  missingOps.forEach(op => {
+    const label = document.createElement('label');
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = `include${op}`;
+    checkbox.value = op;
+    label.appendChild(checkbox);
+    label.appendChild(document.createTextNode(`Include ${op}`));
+    container.appendChild(label);
+  });
+  
+  document.getElementById('missingOperators').classList.remove('hidden');
 }
 
 /************************************************
@@ -229,6 +263,48 @@ async function generateNumbers() {
   sourceData = sourceData.filter(row => 
     selectedOperators.length === 0 || selectedOperators.includes(row.Operator)
   );
+
+  // After reading source data, before generation loop
+  const missingOps = detectMissingOperators(sourceData);
+  const selectedMissingOps = missingOps.filter(op => 
+    document.getElementById(`include${op}`)?.checked
+  );
+
+  // Generate base numbers for selected missing operators
+  for (const op of selectedMissingOps) {
+    const prefix = OPERATOR_PREFIXES[op][0]; // Use first prefix
+    const baseNumber = prefix + '000000'.slice(prefix.length);
+    
+    // Add dummy original entry
+    generatedNumbers.push({
+      Phone: baseNumber,
+      Operator: op,
+      Tip: 'Original (Auto)'
+    });
+    operatorCounts[op].original++;
+
+    // Generate variations for this operator
+    let successfulVariations = 0;
+    let maxAttempts = variations * 3;
+    let attempts = 0;
+
+    while (successfulVariations < variations && attempts < maxAttempts) {
+      attempts++;
+      const newNumber = generateNumberVariation(baseNumber, digitsToVary, op);
+      if (newNumber && !blacklistSet.has(newNumber)) {
+        generatedNumbers.push({
+          Phone: newNumber,
+          Operator: op,
+          Tip: 'Generat'
+        });
+        generated++;
+        operatorCounts[op].generated++;
+        successfulVariations++;
+      } else {
+        rejected++;
+      }
+    }
+  }
 
   for (const row of sourceData) {
     processed++;
