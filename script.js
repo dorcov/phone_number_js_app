@@ -689,42 +689,37 @@ async function generateFreshNumbers() {
   const generatedNumbersSet = new Set();
   const blacklistSet = new Set();
 
-  // Generate numbers for each selected operator
+  // Generate one seed number for each selected prefix
   for (const { operator, prefixes } of selectedOperatorsAndPrefixes) {
-    let baseNumber;
-    let attempts = 0;
-    const maxAttempts = 10;
+    // Process each prefix for this operator
+    for (const prefix of prefixes) {
+      // Generate seed number for this prefix
+      const neededZeros = 8 - prefix.length;
+      const baseNumber = prefix + '0'.repeat(neededZeros);
 
-    // Generate initial seed number
-    do {
-      const randomPrefix = prefixes[Math.floor(Math.random() * prefixes.length)];
-      const neededZeros = 8 - randomPrefix.length;
-      baseNumber = randomPrefix + '0'.repeat(neededZeros);
-      attempts++;
-    } while (generatedNumbersSet.has(baseNumber) && attempts < maxAttempts);
+      if (!generatedNumbersSet.has(baseNumber)) {
+        generatedNumbersSet.add(baseNumber);
+        generatedNumbers.push({
+          Phone: baseNumber,
+          Operator: operator,
+          Tip: 'Original (Fresh)'
+        });
+        operatorCounts[operator].original++;
+        counters.generated++;
 
-    if (!generatedNumbersSet.has(baseNumber)) {
-      generatedNumbersSet.add(baseNumber);
-      generatedNumbers.push({
-        Phone: baseNumber,
-        Operator: operator,
-        Tip: 'Original (Fresh)'
-      });
-      operatorCounts[operator].original++;
-      counters.generated++;
-
-      // Generate variations for the seed number
-      await generateVariationsForOperator(
-        baseNumber,
-        operator,
-        variations,
-        digitsToVary,
-        blacklistSet,
-        generatedNumbers,
-        generatedNumbersSet,
-        operatorCounts,
-        counters
-      );
+        // Generate variations for this seed
+        await generateVariationsForOperator(
+          baseNumber,
+          operator,
+          variations,
+          digitsToVary,
+          blacklistSet,
+          generatedNumbers,
+          generatedNumbersSet,
+          operatorCounts,
+          counters
+        );
+      }
     }
   }
 
