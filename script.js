@@ -655,6 +655,12 @@ document.querySelectorAll('input[name="generationMode"]').forEach(radio => {
 // Add new function for fresh number generation
 async function generateFreshNumbers() {
   const errorMsgEl = document.getElementById('errorMsg');
+  const variationsEl = document.getElementById('variations');
+  const digitsToVaryEl = document.getElementById('digitsToVary');
+  
+  const variations = parseInt(variationsEl.value, 10);
+  const digitsToVary = parseInt(digitsToVaryEl.value, 10);
+  
   const counters = { processed: 0, generated: 0, rejected: 0 };
   const operatorCounts = {
     Orange: { original: 0, generated: 0 },
@@ -681,32 +687,63 @@ async function generateFreshNumbers() {
   const generatedNumbersSet = new Set();
   const blacklistSet = new Set();
 
-  // Generate numbers for each operator
+  // Calculate seeds needed for each operator
   for (const [operator, count] of Object.entries(counts)) {
-    for (let i = 0; i < count; i++) {
-      let baseNumber;
+    if (count > 0) {
+      // Calculate how many seed numbers we need based on variations
+      const seedsNeeded = Math.ceil(count / (variations + 1)); // +1 includes the seed itself
       
-      if (operator === 'Moldtelecom') {
-        const validPrefixes = Object.keys(MOLDTELECOM_REGIONAL_PREFIXES);
-        const randomPrefix = validPrefixes[Math.floor(Math.random() * validPrefixes.length)];
-        const neededZeros = 8 - randomPrefix.length;
-        baseNumber = randomPrefix + '0'.repeat(neededZeros);
-      } else {
-        const validPrefixes = OPERATOR_PREFIXES[operator];
-        const randomPrefix = validPrefixes[Math.floor(Math.random() * validPrefixes.length)];
-        const neededZeros = 8 - randomPrefix.length;
-        baseNumber = randomPrefix + '0'.repeat(neededZeros);
-      }
+      for (let i = 0; i < seedsNeeded; i++) {
+        let baseNumber;
+        let attempts = 0;
+        const maxAttempts = 10; // Prevent infinite loops
+        
+        // Keep trying until we get a unique seed number
+        do {
+          if (operator === 'Moldtelecom') {
+            const validPrefixes = Object.keys(MOLDTELECOM_REGIONAL_PREFIXES);
+            const randomPrefix = validPrefixes[Math.floor(Math.random() * validPrefixes.length)];
+            const neededZeros = 8 - randomPrefix.length;
+            baseNumber = randomPrefix + '0'.repeat(neededZeros);
+          } else {
+            const validPrefixes = OPERATOR_PREFIXES[operator];
+            const randomPrefix = validPrefixes[Math.floor(Math.random() * validPrefixes.length)];
+            const neededZeros = 8 - randomPrefix.length;
+            baseNumber = randomPrefix + '0'.repeat(neededZeros);
+          }
+          attempts++;
+        } while (generatedNumbersSet.has(baseNumber) && attempts < maxAttempts);
 
-      if (!generatedNumbersSet.has(baseNumber)) {
-        generatedNumbersSet.add(baseNumber);
-        generatedNumbers.push({
-          Phone: baseNumber,
-          Operator: operator,
-          Tip: 'Original (Fresh)'
-        });
-        operatorCounts[operator].original++;
-        counters.generated++;
+        if (!generatedNumbersSet.has(baseNumber)) {
+          // Add seed number
+          generatedNumbersSet.add(baseNumber);
+          generatedNumbers.push({
+            Phone: baseNumber,
+            Operator: operator,
+            Tip: 'Original (Fresh)'
+          });
+          operatorCounts[operator].original++;
+          counters.generated++;
+
+          // Generate variations for this seed
+          await generateVariationsForOperator(
+            baseNumber,
+            operator,
+            variations,
+            digitsToVary,
+            blacklistSet,
+            generatedNumbers,
+            generatedNumbersSet,
+            operatorCounts,
+            counters
+          );
+        }
+
+        // Check if we've generated enough numbers for this operator
+        const currentOperatorCount = generatedNumbers.filter(n => n.Operator === operator).length;
+        if (currentOperatorCount >= count) {
+          break;
+        }
       }
     }
   }
@@ -722,6 +759,23 @@ async function generateFreshNumbers() {
       operatorCounts[op].original;
     document.getElementById(`${op.toLowerCase()}GeneratedCount`).textContent = 
       operatorCounts[op].generated;
+  }
+
+  // Remove extra numbers if we generated too many
+  for (const operator of ALL_OPERATORS) {
+    const targetCount = counts[operator];
+    let operatorNumbers = generatedNumbers.filter(n => n.Operator === operator);
+    if (operatorNumbers.length > targetCount) {
+      const numbersToRemove = operatorNumbers.length - targetCount;
+      const indexesToRemove = new Set();
+      while (indexesToRemove.size < numbersToRemove) {
+        indexesToRemove.add(Math.floor(Math.random() * operatorNumbers.length));
+      }
+      
+      generatedNumbers = generatedNumbers.filter((num, index) => 
+        num.Operator !== operator || !indexesToRemove.has(index)
+      );
+    }
   }
 
   return generatedNumbers;
