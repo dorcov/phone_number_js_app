@@ -14,6 +14,17 @@
   <h1>Generator de Numere de Telefon</h1>
   
   <div id="form-section">
+    <div class="generation-mode-switch">
+      <label>
+        <input type="radio" name="generationMode" value="fromSource" checked>
+        Generare din sursă
+      </label>
+      <label>
+        <input type="radio" name="generationMode" value="fresh">
+        Generare numere noi
+      </label>
+    </div>
+
     <div class="file-input-group">
       <label for="sourceFile">Numere Sursă (Excel):</label>
       <input type="file" id="sourceFile" accept=".xlsx,.xls" />
@@ -24,18 +35,6 @@
       <label for="blacklistFile">Lista Neagră (Excel) [Opțional]:</label>
       <input type="file" id="blacklistFile" accept=".xlsx,.xls" />
       <button class="template-btn" id="blacklistTemplateBtn">Descarcă Template Blacklist</button>
-    </div>
-
-    <!-- Add after the file input groups -->
-    <div class="generation-mode-switch">
-      <label>
-        <input type="radio" name="generationMode" value="fromSource" checked>
-        Generare din sursă
-      </label>
-      <label>
-        <input type="radio" name="generationMode" value="fresh">
-        Generare numere noi
-      </label>
     </div>
 
     <div id="freshGenerationOptions" class="hidden">
