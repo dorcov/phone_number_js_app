@@ -669,14 +669,19 @@ async function generateFreshNumbers() {
     Moldtelecom: { original: 0, generated: 0 }
   };
 
-  // Get selected operators
-  const selectedOperators = ALL_OPERATORS.filter(op => 
-    document.getElementById(`generate${op}`).checked
-  );
+  // Get selected operators and their prefixes
+  const selectedOperatorsAndPrefixes = ALL_OPERATORS
+    .filter(op => document.getElementById(`generate${op}`).checked)
+    .map(op => ({
+      operator: op,
+      prefixes: Array.from(document.getElementById(`${op.toLowerCase()}Prefixes`).selectedOptions)
+                    .map(option => option.value)
+    }))
+    .filter(op => op.prefixes.length > 0);
 
   // Validate selection
-  if (selectedOperators.length === 0) {
-    errorMsgEl.textContent = 'Selectați cel puțin un operator';
+  if (selectedOperatorsAndPrefixes.length === 0) {
+    errorMsgEl.textContent = 'Selectați cel puțin un operator și prefix';
     return null;
   }
 
@@ -685,24 +690,16 @@ async function generateFreshNumbers() {
   const blacklistSet = new Set();
 
   // Generate numbers for each selected operator
-  for (const operator of selectedOperators) {
+  for (const { operator, prefixes } of selectedOperatorsAndPrefixes) {
     let baseNumber;
     let attempts = 0;
     const maxAttempts = 10;
 
     // Generate initial seed number
     do {
-      if (operator === 'Moldtelecom') {
-        const validPrefixes = Object.keys(MOLDTELECOM_REGIONAL_PREFIXES);
-        const randomPrefix = validPrefixes[Math.floor(Math.random() * validPrefixes.length)];
-        const neededZeros = 8 - randomPrefix.length;
-        baseNumber = randomPrefix + '0'.repeat(neededZeros);
-      } else {
-        const validPrefixes = OPERATOR_PREFIXES[operator];
-        const randomPrefix = validPrefixes[Math.floor(Math.random() * validPrefixes.length)];
-        const neededZeros = 8 - randomPrefix.length;
-        baseNumber = randomPrefix + '0'.repeat(neededZeros);
-      }
+      const randomPrefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+      const neededZeros = 8 - randomPrefix.length;
+      baseNumber = randomPrefix + '0'.repeat(neededZeros);
       attempts++;
     } while (generatedNumbersSet.has(baseNumber) && attempts < maxAttempts);
 

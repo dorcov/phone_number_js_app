@@ -39,24 +39,61 @@
     </div>
 
     <div id="freshGenerationOptions" class="hidden">
-      <h3>Selectați operatorii pentru generare:</h3>
-      <div class="operator-selection checkbox-group">
-        <label>
-          <input type="checkbox" id="generateOrange" checked>
-          Orange
-        </label>
-        <label>
-          <input type="checkbox" id="generateMoldcell" checked>
-          Moldcell
-        </label>
-        <label>
-          <input type="checkbox" id="generateUnite" checked>
-          Unite
-        </label>
-        <label>
-          <input type="checkbox" id="generateMoldtelecom" checked>
-          Moldtelecom
-        </label>
+      <h3>Selectați operatorii și prefixele pentru generare:</h3>
+      <div class="operator-prefixes">
+        <div class="operator-group">
+          <label>
+            <input type="checkbox" id="generateOrange" checked>
+            Orange
+          </label>
+          <select id="orangePrefixes" multiple>
+            <option value="60" selected>60 - Orange</option>
+            <option value="61" selected>61 - Orange</option>
+            <option value="62" selected>62 - Orange</option>
+            <option value="66" selected>66 - Orange</option>
+            <option value="68" selected>68 - Orange</option>
+            <option value="69" selected>69 - Orange</option>
+          </select>
+        </div>
+
+        <div class="operator-group">
+          <label>
+            <input type="checkbox" id="generateMoldcell" checked>
+            Moldcell
+          </label>
+          <select id="moldcellPrefixes" multiple>
+            <option value="76" selected>76 - Moldcell</option>
+            <option value="78" selected>78 - Moldcell</option>
+            <option value="79" selected>79 - Moldcell</option>
+          </select>
+        </div>
+
+        <div class="operator-group">
+          <label>
+            <input type="checkbox" id="generateUnite" checked>
+            Unite
+          </label>
+          <select id="unitePrefixes" multiple>
+            <option value="66" selected>66 - Unite</option>
+            <option value="67" selected>67 - Unite</option>
+          </select>
+        </div>
+
+        <div class="operator-group">
+          <label>
+            <input type="checkbox" id="generateMoldtelecom" checked>
+            Moldtelecom
+          </label>
+          <select id="moldtelecomPrefixes" multiple>
+            <option value="22" selected>22 - Chișinău</option>
+            <option value="230">230 - Soroca</option>
+            <option value="231">231 - Bălți</option>
+            <option value="235">235 - Orhei</option>
+            <option value="236">236 - Ungheni</option>
+            <option value="237">237 - Strășeni</option>
+            <!-- Add more options for other regions -->
+          </select>
+        </div>
       </div>
     </div>
 
