@@ -710,13 +710,10 @@ document.querySelectorAll('input[name="generationMode"]').forEach(radio => {
 // Add to Event Listeners section
 document.querySelectorAll('.select-all-btn').forEach(button => {
   button.addEventListener('click', (e) => {
-    const prefix = e.target.dataset.prefix;
-    const checkboxes = document.querySelectorAll(`input[name="${prefix}Prefix"]`);
+    const operator = button.getAttribute('data-prefix');
+    const checkboxes = document.querySelectorAll(`input[name="${operator}Prefix"]`);
     const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-    
-    checkboxes.forEach(checkbox => {
-      checkbox.checked = !allChecked;
-    });
+    checkboxes.forEach(cb => cb.checked = !allChecked);
   });
 });
 
