@@ -455,15 +455,11 @@ async function generateNumbers() {
     let baseNumber;
     
     if (op === 'Moldtelecom') {
-      // Folosim un prefix regional valid pentru Moldtelecom
-      const validPrefix = Object.keys(MOLDTELECOM_REGIONAL_PREFIXES)[0]; // Luăm primul prefix valid
-      const neededZeros = 8 - validPrefix.length;
-      baseNumber = validPrefix + '0'.repeat(neededZeros);
+      const validPrefix = Object.keys(MOLDTELECOM_REGIONAL_PREFIXES)[0];
+      baseNumber = generateRandomSeedNumber(validPrefix);
     } else {
-      // Pentru alți operatori folosim prefixele existente
       const validPrefix = OPERATOR_PREFIXES[op][0];
-      const neededZeros = 8 - validPrefix.length;
-      baseNumber = validPrefix + '0'.repeat(neededZeros);
+      baseNumber = generateRandomSeedNumber(validPrefix);
     }
 
     if (!generatedNumbersSet.has(baseNumber)) {
@@ -506,17 +502,13 @@ async function generateNumbers() {
         let baseNumber;
         
         if (op === 'Moldtelecom') {
-          // Pentru Moldtelecom, folosim prefixele regionale
           const validPrefixes = Object.keys(MOLDTELECOM_REGIONAL_PREFIXES);
           const randomPrefix = validPrefixes[Math.floor(Math.random() * validPrefixes.length)];
-          const neededZeros = 8 - randomPrefix.length;
-          baseNumber = randomPrefix + '0'.repeat(neededZeros);
+          baseNumber = generateRandomSeedNumber(randomPrefix);
         } else {
-          // Pentru alți operatori
           const validPrefixes = OPERATOR_PREFIXES[op];
           const randomPrefix = validPrefixes[Math.floor(Math.random() * validPrefixes.length)];
-          const neededZeros = 8 - randomPrefix.length;
-          baseNumber = randomPrefix + '0'.repeat(neededZeros);
+          baseNumber = generateRandomSeedNumber(randomPrefix);
         }
 
         if (!generatedNumbersSet.has(baseNumber)) {
@@ -693,9 +685,8 @@ async function generateFreshNumbers() {
   for (const { operator, prefixes } of selectedOperatorsAndPrefixes) {
     // Process each prefix for this operator
     for (const prefix of prefixes) {
-      // Generate seed number for this prefix
-      const neededZeros = 8 - prefix.length;
-      const baseNumber = prefix + '0'.repeat(neededZeros);
+      // Generate random seed number for this prefix
+      const baseNumber = generateRandomSeedNumber(prefix);
 
       if (!generatedNumbersSet.has(baseNumber)) {
         generatedNumbersSet.add(baseNumber);
@@ -802,4 +793,338 @@ document.querySelectorAll('.operator-group > label > input[type="checkbox"]').fo
   });
 });
 
-// ...existing code...
+// Add this helper function at the start of the file after the constants
+function generateRandomSeedNumber(prefix) {
+  const neededDigits = 8 - prefix.length;
+  let result = prefix;
+  
+  // Generate random digits, avoiding sequential and repeating patterns
+  while (result.length < 8) {
+    const lastDigit = result[result.length - 1];
+    let newDigit;
+    
+    do {
+      newDigit = Math.floor(Math.random() * 10).toString();
+      // Avoid sequential and repeating digits
+    } while (
+      (lastDigit && Math.abs(parseInt(newDigit) - parseInt(lastDigit)) === 1) || // Avoid sequential
+      (result.endsWith(newDigit + newDigit)) // Avoid repeating
+    );
+    
+    result += newDigit;
+  }
+  
+  return result;
+}
+
+// Modify the generateFreshNumbers function's seed generation part:
+async function generateFreshNumbers() {
+  const errorMsgEl = document.getElementById('errorMsg');
+  const variationsEl = document.getElementById('variations');
+  const digitsToVaryEl = document.getElementById('digitsToVary');
+  
+  const variations = parseInt(variationsEl.value, 10);
+  const digitsToVary = parseInt(digitsToVaryEl.value, 10);
+  
+  const counters = { processed: 0, generated: 0, rejected: 0 };
+  const operatorCounts = {
+    Orange: { original: 0, generated: 0 },
+    Moldcell: { original: 0, generated: 0 },
+    Unite: { original: 0, generated: 0 },
+    Moldtelecom: { original: 0, generated: 0 }
+  };
+
+  // Get selected operators and their prefixes
+  const selectedOperatorsAndPrefixes = ALL_OPERATORS
+    .filter(op => document.getElementById(`generate${op}`).checked)
+    .map(op => ({
+      operator: op,
+      prefixes: Array.from(document.querySelectorAll(`input[name="${op.toLowerCase()}Prefix"]:checked`))
+                    .map(checkbox => checkbox.value)
+    }))
+    .filter(op => op.prefixes.length > 0);
+
+  // Validate selection
+  if (selectedOperatorsAndPrefixes.length === 0) {
+    errorMsgEl.textContent = 'Selectați cel puțin un operator și prefix';
+    return null;
+  }
+
+  const generatedNumbers = [];
+  const generatedNumbersSet = new Set();
+  const blacklistSet = new Set();
+
+  // Generate one seed number for each selected prefix
+  for (const { operator, prefixes } of selectedOperatorsAndPrefixes) {
+    // Process each prefix for this operator
+    for (const prefix of prefixes) {
+      // Generate random seed number for this prefix
+      const baseNumber = generateRandomSeedNumber(prefix);
+
+      if (!generatedNumbersSet.has(baseNumber)) {
+        generatedNumbersSet.add(baseNumber);
+        generatedNumbers.push({
+          Phone: baseNumber,
+          Operator: operator,
+          Tip: 'Original (Fresh)'
+        });
+        operatorCounts[operator].original++;
+        counters.generated++;
+
+        // Generate variations for this seed
+        await generateVariationsForOperator(
+          baseNumber,
+          operator,
+          variations,
+          digitsToVary,
+          blacklistSet,
+          generatedNumbers,
+          generatedNumbersSet,
+          operatorCounts,
+          counters
+        );
+      }
+    }
+  }
+
+  // Update UI counters
+  document.getElementById('processedCount').textContent = counters.processed;
+  document.getElementById('generatedCount').textContent = counters.generated;
+  document.getElementById('rejectedCount').textContent = counters.rejected;
+
+  // Update operator-specific counts
+  for (const op of ALL_OPERATORS) {
+    document.getElementById(`${op.toLowerCase()}OriginalCount`).textContent = 
+      operatorCounts[op].original;
+    document.getElementById(`${op.toLowerCase()}GeneratedCount`).textContent = 
+      operatorCounts[op].generated;
+  }
+
+  return generatedNumbers;
+}
+
+// Also modify the seed generation in the main generateNumbers function
+async function generateNumbers() {
+  const generationMode = document.querySelector('input[name="generationMode"]:checked').value;
+  
+  if (generationMode === 'fresh') {
+    return generateFreshNumbers();
+  }
+  
+  const sourceFileEl = document.getElementById('sourceFile');
+  const blacklistFileEl = document.getElementById('blacklistFile');
+  const variationsEl = document.getElementById('variations');
+  const digitsToVaryEl = document.getElementById('digitsToVary');
+  const errorMsgEl = document.getElementById('errorMsg');
+  const processedCount = document.getElementById('processedCount');
+  const generatedCount = document.getElementById('generatedCount');
+  const rejectedCount = document.getElementById('rejectedCount');
+  const fallbackOperatorEl = document.getElementById('fallbackOperator');
+
+  // Clear error and show summary
+  errorMsgEl.textContent = '';
+  document.getElementById('summary-section').classList.remove('hidden');
+
+  // Initialize counters
+  let processed = 0;
+  let generated = 0;
+  let rejected = 0;
+
+  // Initialize operator counters
+  const operatorCounts = {
+    Orange: { original: 0, generated: 0 },
+    Moldcell: { original: 0, generated: 0 },
+    Unite: { original: 0, generated: 0 },
+    Moldtelecom: { original: 0, generated: 0 }
+  };
+
+  // Initialize counters object
+  const counters = {
+    processed: 0,
+    generated: 0,
+    rejected: 0
+  };
+
+  // Basic checks
+  if (!sourceFileEl.files.length) {
+    errorMsgEl.textContent = 'Vă rugăm să încărcați un fișier sursă.';
+    return null;
+  }
+  const variations = parseInt(variationsEl.value, 10);
+  const digitsToVary = parseInt(digitsToVaryEl.value, 10);
+  if (isNaN(variations) || isNaN(digitsToVary) || digitsToVary < 1 || digitsToVary > 6) {
+    errorMsgEl.textContent = 'Număr invalid de cifre de variat (trebuie să fie între 1-6).';
+    return null;
+  }
+
+  let sourceData = [];
+  let blacklistData = [];
+
+  // Read Excel files
+  try {
+    sourceData = await readExcelFile(sourceFileEl.files[0]);
+    if (blacklistFileEl.files.length) {
+      blacklistData = await readExcelFile(blacklistFileEl.files[0]);
+    }
+  } catch (err) {
+    errorMsgEl.textContent = 'Eroare la citirea fișierelor Excel: ' + err.message;
+    return null;
+  }
+
+  // Build blacklist Set
+  const blacklistSet = new Set();
+  for (const row of blacklistData) {
+    const cleaned = cleanSourceNumber(row.Phone);
+    if (cleaned) blacklistSet.add(cleaned);
+  }
+
+  const generatedNumbers = [];
+  const generatedNumbersSet = new Set(); // Add this line to track all generated numbers
+
+  // Remove operator filter logic
+  /*
+  // const selectedOperators = Array.from(document.getElementById('operatorFilter').selectedOptions)
+  //   .map(option => option.value);
+  // sourceData = sourceData.filter(row => 
+  //   selectedOperators.length === 0 || selectedOperators.includes(row.Operator)
+  // );
+  */
+
+  // Process source data first
+  for (const row of sourceData) {
+    processed++;
+    const baseNumber = cleanSourceNumber(row.Phone);
+    if (!baseNumber) continue;
+
+    const operatorName = row.Operator || getRandomOperator();
+
+    if (!generatedNumbersSet.has(baseNumber)) { // Add this check
+      generatedNumbersSet.add(baseNumber);
+      generatedNumbers.push({
+        Phone: baseNumber,
+        Operator: operatorName,
+        Tip: 'Original'
+      });
+      operatorCounts[operatorName].original++;
+    }
+
+    await generateVariationsForOperator(
+      baseNumber, 
+      operatorName, 
+      variations, 
+      digitsToVary, 
+      blacklistSet, 
+      generatedNumbers,
+      generatedNumbersSet, // Add this parameter
+      operatorCounts,
+      counters // Adăugăm counters ca parametru
+    );
+  }
+
+  // Then process missing operators
+  const missingOps = detectMissingOperators(sourceData);
+  const selectedMissingOps = missingOps.filter(op => 
+    document.getElementById(`include${op}`)?.checked
+  );
+
+  for (const op of selectedMissingOps) {
+    processed++;
+    let baseNumber;
+    
+    if (op === 'Moldtelecom') {
+      const validPrefix = Object.keys(MOLDTELECOM_REGIONAL_PREFIXES)[0];
+      baseNumber = generateRandomSeedNumber(validPrefix);
+    } else {
+      const validPrefix = OPERATOR_PREFIXES[op][0];
+      baseNumber = generateRandomSeedNumber(validPrefix);
+    }
+
+    if (!generatedNumbersSet.has(baseNumber)) {
+      generatedNumbersSet.add(baseNumber);
+      generatedNumbers.push({
+        Phone: baseNumber,
+        Operator: op,
+        Tip: 'Original (Auto)'
+      });
+      operatorCounts[op].original++;
+    }
+
+    await generateVariationsForOperator(
+      baseNumber,
+      op,
+      variations,
+      digitsToVary,
+      blacklistSet,
+      generatedNumbers,
+      generatedNumbersSet,
+      operatorCounts,
+      counters
+    );
+  }
+
+  // După ce am procesat 'sourceData':
+  const operatorCurrentCounts = {};
+  for (const op of ALL_OPERATORS) {
+    operatorCurrentCounts[op] = operatorCounts[op].original; 
+  }
+  const maxCount = Math.max(...Object.values(operatorCurrentCounts));
+
+  // Generăm semințe pentru operatorii sub 'maxCount'
+  for (const op of ALL_OPERATORS) {
+    const deficit = maxCount - operatorCurrentCounts[op];
+    if (deficit > 0) {
+      // Câte semințe: de ex. deficit / variations (ajustat)
+      const seedsToGenerate = Math.ceil(deficit / variations);
+      for (let i = 0; i < seedsToGenerate; i++) {
+        let baseNumber;
+        
+        if (op === 'Moldtelecom') {
+          const validPrefixes = Object.keys(MOLDTELECOM_REGIONAL_PREFIXES);
+          const randomPrefix = validPrefixes[Math.floor(Math.random() * validPrefixes.length)];
+          baseNumber = generateRandomSeedNumber(randomPrefix);
+        } else {
+          const validPrefixes = OPERATOR_PREFIXES[op];
+          const randomPrefix = validPrefixes[Math.floor(Math.random() * validPrefixes.length)];
+          baseNumber = generateRandomSeedNumber(randomPrefix);
+        }
+
+        if (!generatedNumbersSet.has(baseNumber)) {
+          generatedNumbersSet.add(baseNumber);
+          generatedNumbers.push({
+            Phone: baseNumber,
+            Operator: op,
+            Tip: 'Original (Auto-Seed)'
+          });
+          operatorCounts[op].original++;
+          
+          await generateVariationsForOperator(
+            baseNumber,
+            op,
+            variations,
+            digitsToVary,
+            blacklistSet,
+            generatedNumbers,
+            generatedNumbersSet,
+            operatorCounts,
+            counters
+          );
+        }
+      }
+    }
+  }
+
+  // Update final counters
+  processedCount.textContent = processed;
+  generatedCount.textContent = counters.generated;
+  rejectedCount.textContent = counters.rejected;
+
+  // Update operator-specific counts
+  for (const op of ALL_OPERATORS) {
+    document.getElementById(`${op.toLowerCase()}OriginalCount`).textContent = 
+      operatorCounts[op].original;
+    document.getElementById(`${op.toLowerCase()}GeneratedCount`).textContent = 
+      operatorCounts[op].generated;
+  }
+
+  return generatedNumbers;
+}
