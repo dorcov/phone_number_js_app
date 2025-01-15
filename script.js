@@ -761,10 +761,13 @@ async function generateFreshNumbers() {
       operatorCounts[op].generated;
   }
 
+  // Change the filtering logic to create a new array instead of reassigning
+  let finalNumbers = generatedNumbers.slice(); // Create a copy of the original array
+
   // Remove extra numbers if we generated too many
   for (const operator of ALL_OPERATORS) {
     const targetCount = counts[operator];
-    let operatorNumbers = generatedNumbers.filter(n => n.Operator === operator);
+    let operatorNumbers = finalNumbers.filter(n => n.Operator === operator);
     if (operatorNumbers.length > targetCount) {
       const numbersToRemove = operatorNumbers.length - targetCount;
       const indexesToRemove = new Set();
@@ -772,13 +775,13 @@ async function generateFreshNumbers() {
         indexesToRemove.add(Math.floor(Math.random() * operatorNumbers.length));
       }
       
-      generatedNumbers = generatedNumbers.filter((num, index) => 
+      finalNumbers = finalNumbers.filter((num, index) => 
         num.Operator !== operator || !indexesToRemove.has(index)
       );
     }
   }
 
-  return generatedNumbers;
+  return finalNumbers;
 }
 
 /************************************************
