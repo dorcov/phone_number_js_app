@@ -888,6 +888,8 @@ async function generateFreshNumbers() {
   const errorMsgEl = document.getElementById('errorMsg');
   const variationsEl = document.getElementById('variations');
   const digitsToVaryEl = document.getElementById('digitsToVary');
+  const blacklistFileEl = document.getElementById('blacklistFile');
+  const blacklistSet = new Set();
   
   const variations = parseInt(variationsEl.value, 10);
   const digitsToVary = parseInt(digitsToVaryEl.value, 10);
@@ -918,16 +920,40 @@ async function generateFreshNumbers() {
 
   const generatedNumbers = [];
   const generatedNumbersSet = new Set();
-  const blacklistSet = new Set();
+
+  // Build blacklist Set
+  if (blacklistFileEl.files.length) {
+    try {
+      const blacklistData = await readExcelFile(blacklistFileEl.files[0]);
+      for (const row of blacklistData) {
+        const cleaned = cleanSourceNumber(row.Phone);
+        if (cleaned) blacklistSet.add(cleaned);
+      }
+    } catch (err) {
+      errorMsgEl.textContent = 'Eroare la citirea fișierului blacklist: ' + err.message;
+      return null;
+    }
+  }
 
   // Generate one seed number for each selected prefix
   for (const { operator, prefixes } of selectedOperatorsAndPrefixes) {
     // Process each prefix for this operator
     for (const prefix of prefixes) {
-      // Generate random seed number for this prefix
-      const baseNumber = generateRandomSeedNumber(prefix);
+      let baseNumber;
+      let attempts = 0;
+      const maxAttempts = 50; // Increase max attempts to find valid number
 
-      if (!generatedNumbersSet.has(baseNumber)) {
+      // Keep trying until we get a valid seed number that's not in blacklist
+      do {
+        baseNumber = generateRandomSeedNumber(prefix);
+        attempts++;
+      } while (
+        (generatedNumbersSet.has(baseNumber) || blacklistSet.has(baseNumber)) && 
+        attempts < maxAttempts
+      );
+
+      // Only proceed if we found a valid number
+      if (!generatedNumbersSet.has(baseNumber) && !blacklistSet.has(baseNumber)) {
         generatedNumbersSet.add(baseNumber);
         generatedNumbers.push({
           Phone: baseNumber,
@@ -967,6 +993,93 @@ async function generateFreshNumbers() {
   }
 
   return generatedNumbers;
+}
+
+/************************************************
+ * 6) Template Generation Functions
+ ***********************************************/
+function generateSourceTemplate() {
+  const template = [
+    {
+      Phone: '60123456',
+      Operator: 'Orange',
+      Tip: 'Original'
+    },
+    {
+      Phone: '76123456',
+      Operator: 'Moldcell',
+      Tip: 'Original'
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(template);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Template');
+  XLSX.writeFile(wb, 'template_sursa.xlsx');
+}
+
+function generateBlacklistTemplate() {
+  const template = [
+    {
+      Phone: '60123456'
+    },
+    {
+      Phone: '76123456'
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(template);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Template');
+  XLSX.writeFile(wb, 'template_blacklist.xlsx');
+}
+
+// Add to Event Listeners section
+document.querySelectorAll('.select-all-btn').forEach(button => {
+  button.addEventListener('click', (e) => {
+    const prefix = e.target.dataset.prefix;
+    const checkboxes = document.querySelectorAll(`input[name="${prefix}Prefix"]`);
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = !allChecked;
+    });
+  });
+});
+
+// Add checkbox link between operator and its prefixes
+document.querySelectorAll('.operator-group > label > input[type="checkbox"]').forEach(operatorCheckbox => {
+  operatorCheckbox.addEventListener('change', (e) => {
+    const operator = e.target.id.replace('generate', '').toLowerCase();
+    const prefixCheckboxes = document.querySelectorAll(`input[name="${operator}Prefix"]`);
+    prefixCheckboxes.forEach(checkbox => {
+      checkbox.checked = e.target.checked;
+    });
+  });
+});
+
+// Add this helper function at the start of the file after the constants
+function generateRandomSeedNumber(prefix) {
+  const neededDigits = 8 - prefix.length;
+  let result = prefix;
+  
+  // Generate random digits, avoiding sequential and repeating patterns
+  while (result.length < 8) {
+    const lastDigit = result[result.length - 1];
+    let newDigit;
+    
+    do {
+      newDigit = Math.floor(Math.random() * 10).toString();
+      // Avoid sequential and repeating digits
+    } while (
+      (lastDigit && Math.abs(parseInt(newDigit) - parseInt(lastDigit)) === 1) || // Avoid sequential
+      (result.endsWith(newDigit + newDigit)) // Avoid repeating
+    );
+    
+    result += newDigit;
+  }
+  
+  return result;
 }
 
 // Also modify the seed generation in the main generateNumbers function
