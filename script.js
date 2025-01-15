@@ -74,6 +74,11 @@ function cleanSourceNumber(numberStr) {
   // Special handling for Moldtelecom numbers
   for (const prefix of Object.keys(MOLDTELECOM_REGIONAL_PREFIXES)) {
     if (cleaned.startsWith(prefix)) {
+      // Check if the digit after prefix is 0
+      const digitAfterPrefix = cleaned.charAt(prefix.length);
+      if (digitAfterPrefix === '0') {
+        return null;
+      }
       return cleaned.slice(0, 8);
     }
   }
@@ -182,23 +187,27 @@ function generateMoldtelecomNumber(baseNumber, digitsToVary) {
 
   // Calculate remaining digits needed based on prefix length
   const remainingLength = 8 - regionalPrefix.length;
-  let newNumber = regionalPrefix;
+  let newNumber;
+  let attempts = 0;
+  const maxAttempts = 10;
 
-  // Generate random digits for the remaining positions
-  for (let i = 0; i < remainingLength; i++) {
-    newNumber += Math.floor(Math.random() * 10).toString();
-  }
+  do {
+    newNumber = regionalPrefix;
+    // First digit after prefix should not be 0
+    newNumber += Math.floor(Math.random() * 9 + 1).toString(); // 1-9
+    
+    // Generate rest of the random digits
+    for (let i = 1; i < remainingLength; i++) {
+      newNumber += Math.floor(Math.random() * 10).toString();
+    }
+    attempts++;
+  } while (
+    (document.getElementById('validateSequential')?.checked && isSequentialNumber(newNumber) ||
+    document.getElementById('validateRepeating')?.checked && hasRepeatingDigits(newNumber)) &&
+    attempts < maxAttempts
+  );
 
-  // Validate the generated number
-  if (document.getElementById('validateSequential')?.checked && isSequentialNumber(newNumber)) {
-    return null;
-  }
-  
-  if (document.getElementById('validateRepeating')?.checked && hasRepeatingDigits(newNumber)) {
-    return null;
-  }
-
-  return newNumber;
+  return attempts < maxAttempts ? newNumber : null;
 }
 
 // Add new function for Transnistria number generation (similar to generateMoldtelecomNumber)
