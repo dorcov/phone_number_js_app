@@ -445,28 +445,41 @@ async function generateNumbers() {
   );
 
   for (const op of selectedMissingOps) {
-    const prefix = OPERATOR_PREFIXES[op][0];
-    const neededZeros = 8 - prefix.length;
-    const baseNumber = prefix + '0'.repeat(neededZeros);
-    
     processed++;
-    generatedNumbers.push({
-      Phone: baseNumber,
-      Operator: op,
-      Tip: 'Original (Auto)'
-    });
-    operatorCounts[op].original++;
+    let baseNumber;
+    
+    if (op === 'Moldtelecom') {
+      // Folosim un prefix regional valid pentru Moldtelecom
+      const validPrefix = Object.keys(MOLDTELECOM_REGIONAL_PREFIXES)[0]; // Luăm primul prefix valid
+      const neededZeros = 8 - validPrefix.length;
+      baseNumber = validPrefix + '0'.repeat(neededZeros);
+    } else {
+      // Pentru alți operatori folosim prefixele existente
+      const validPrefix = OPERATOR_PREFIXES[op][0];
+      const neededZeros = 8 - validPrefix.length;
+      baseNumber = validPrefix + '0'.repeat(neededZeros);
+    }
+
+    if (!generatedNumbersSet.has(baseNumber)) {
+      generatedNumbersSet.add(baseNumber);
+      generatedNumbers.push({
+        Phone: baseNumber,
+        Operator: op,
+        Tip: 'Original (Auto)'
+      });
+      operatorCounts[op].original++;
+    }
 
     await generateVariationsForOperator(
-      baseNumber, 
-      op, 
-      variations, 
-      digitsToVary, 
-      blacklistSet, 
-      generatedNumbers, 
-      generatedNumbersSet, // Add this parameter
+      baseNumber,
+      op,
+      variations,
+      digitsToVary,
+      blacklistSet,
+      generatedNumbers,
+      generatedNumbersSet,
       operatorCounts,
-      counters // Adăugăm counters ca parametru
+      counters
     );
   }
 
@@ -484,31 +497,43 @@ async function generateNumbers() {
       // Câte semințe: de ex. deficit / variations (ajustat)
       const seedsToGenerate = Math.ceil(deficit / variations);
       for (let i = 0; i < seedsToGenerate; i++) {
-        const randomPrefix = OPERATOR_PREFIXES[op][Math.floor(Math.random() * OPERATOR_PREFIXES[op].length)];
-        let randomNumber = randomPrefix;
-        while (randomNumber.length < 8) {
-          randomNumber += Math.floor(Math.random() * 10).toString();
+        let baseNumber;
+        
+        if (op === 'Moldtelecom') {
+          // Pentru Moldtelecom, folosim prefixele regionale
+          const validPrefixes = Object.keys(MOLDTELECOM_REGIONAL_PREFIXES);
+          const randomPrefix = validPrefixes[Math.floor(Math.random() * validPrefixes.length)];
+          const neededZeros = 8 - randomPrefix.length;
+          baseNumber = randomPrefix + '0'.repeat(neededZeros);
+        } else {
+          // Pentru alți operatori
+          const validPrefixes = OPERATOR_PREFIXES[op];
+          const randomPrefix = validPrefixes[Math.floor(Math.random() * validPrefixes.length)];
+          const neededZeros = 8 - randomPrefix.length;
+          baseNumber = randomPrefix + '0'.repeat(neededZeros);
         }
-        randomNumber = randomNumber.slice(0, 8);
 
-        generatedNumbers.push({
-          Phone: randomNumber,
-          Operator: op,
-          Tip: 'Original (Auto-Seed)'
-        });
-        operatorCounts[op].original++;
-        // Generăm variații pentru acest seed
-        await generateVariationsForOperator(
-          randomNumber,
-          op,
-          variations,
-          digitsToVary,
-          blacklistSet,
-          generatedNumbers,
-          generatedNumbersSet, // Add this parameter
-          operatorCounts,
-          counters
-        );
+        if (!generatedNumbersSet.has(baseNumber)) {
+          generatedNumbersSet.add(baseNumber);
+          generatedNumbers.push({
+            Phone: baseNumber,
+            Operator: op,
+            Tip: 'Original (Auto-Seed)'
+          });
+          operatorCounts[op].original++;
+          
+          await generateVariationsForOperator(
+            baseNumber,
+            op,
+            variations,
+            digitsToVary,
+            blacklistSet,
+            generatedNumbers,
+            generatedNumbersSet,
+            operatorCounts,
+            counters
+          );
+        }
       }
     }
   }
