@@ -635,9 +635,21 @@ async function generateVariationsForOperator(
   let successfulVariations = 0;
   let maxAttempts = variations * 3;
   let attempts = 0;
+  
+  // Batch processing to prevent UI freezing
+  const batchSize = 100;
+  let currentBatch = 0;
 
   while (successfulVariations < variations && attempts < maxAttempts) {
     attempts++;
+    currentBatch++;
+
+    // Add a small delay every batchSize attempts to prevent UI freeze
+    if (currentBatch >= batchSize) {
+      await new Promise(resolve => setTimeout(resolve, 0));
+      currentBatch = 0;
+    }
+
     const newNumber = generateNumberVariation(baseNumber, digitsToVary, operator);
     // Add check for duplicates using generatedNumbersSet
     if (newNumber && !blacklistSet.has(newNumber) && !generatedNumbersSet.has(newNumber)) {
@@ -771,12 +783,13 @@ function generateRandomSeedNumber(prefix) {
   return result;
 }
 
-// Add this new helper function
+// Fix the infinite loop in shuffleArray function
 function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i++) {
+  for (let i = array.length - 1; i > 0; i--) { // Changed i++ to i--
     const j = Math.floor(Math.random() * (i + 1));
     [array[i], array[j]] = [array[j], array[i]];
   }
+  return array;
 }
 
 // Also modify the seed generation in the main generateNumbers function
@@ -1127,15 +1140,26 @@ async function generateFreshNumbers() {
  * 5) Event Listeners
  ***********************************************/
 document.getElementById('generateBtn').addEventListener('click', async () => {
-  const generatedNumbers = await generateNumbers();
-  if (generatedNumbers) {
-    // Show the output section
-    document.getElementById('output-section').classList.remove('hidden');
+  try {
+    const button = document.getElementById('generateBtn');
+    const originalText = button.textContent;
+    button.textContent = 'Generare în curs...';
+    button.disabled = true;
+
+    const generatedNumbers = await generateNumbers();
     
-    // Store the generated numbers for download
-    document.getElementById('downloadBtn').onclick = () => {
-      downloadExcel(generatedNumbers);
-    };
+    if (generatedNumbers) {
+      document.getElementById('output-section').classList.remove('hidden');
+      document.getElementById('downloadBtn').onclick = () => {
+        downloadExcel(generatedNumbers);
+      };
+    }
+  } catch (error) {
+    document.getElementById('errorMsg').textContent = 'Eroare: ' + error.message;
+  } finally {
+    const button = document.getElementById('generateBtn');
+    button.textContent = 'Generează';
+    button.disabled = false;
   }
 });
 
