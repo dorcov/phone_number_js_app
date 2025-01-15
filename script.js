@@ -637,6 +637,7 @@ document.querySelectorAll('input[name="generationMode"]').forEach(radio => {
     if (e.target.value === 'fresh') {
       sourceElements.forEach(el => el.classList.add('hidden'));
       freshOptions.classList.remove('hidden');
+      document.getElementById('missingOperators').classList.add('hidden');
     } else {
       sourceElements.forEach(el => el.classList.remove('hidden'));
       freshOptions.classList.add('hidden');
