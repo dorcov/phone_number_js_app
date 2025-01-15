@@ -253,27 +253,26 @@ function generateTransnistriaNumber(baseNumber, digitsToVary) {
 
 // Add new function for TransnistriaIDC mobile numbers
 function generateTransnistriaIDCNumber(baseNumber, digitsToVary) {
-  // Get the prefix (774, 777, 778, or 779)
-  const prefix = baseNumber.slice(0, 3);
+  let prefix;
   
-  // Validate prefix
-  if (!OPERATOR_PREFIXES.TransnistriaIDC.includes(prefix)) {
-    // If invalid prefix, use a random one
-    const validPrefixes = OPERATOR_PREFIXES.TransnistriaIDC;
-    const randomPrefix = validPrefixes[Math.floor(Math.random() * validPrefixes.length)];
-    baseNumber = randomPrefix + baseNumber.slice(3);
+  // Check if the number starts with a valid prefix
+  const validPrefixes = OPERATOR_PREFIXES.TransnistriaIDC;
+  const currentPrefix = baseNumber.slice(0, 3);
+  
+  if (validPrefixes.includes(currentPrefix)) {
+    prefix = currentPrefix;
+  } else {
+    // Use a random valid prefix
+    prefix = validPrefixes[Math.floor(Math.random() * validPrefixes.length)];
   }
 
-  // Calculate remaining digits needed (5 digits after prefix)
-  const remainingLength = 8 - 3; // 8 total - 3 for prefix
+  // Generate 5 random digits after the prefix
   let newNumber = prefix;
-
-  // Generate random digits for the remaining positions
-  for (let i = 0; i < remainingLength; i++) {
+  for (let i = 0; i < 5; i++) {
     newNumber += Math.floor(Math.random() * 10).toString();
   }
 
-  // Validate the generated number
+  // Apply validation rules
   if (document.getElementById('validateSequential')?.checked && isSequentialNumber(newNumber)) {
     return null;
   }
@@ -731,6 +730,7 @@ function initializeEventListeners() {
     button.addEventListener('click', function() {
       const operatorGroup = this.closest('.operator-group');
       const operator = operatorGroup.getAttribute('data-operator');
+      // Use correct attribute selector that matches the HTML
       const checkboxes = operatorGroup.querySelectorAll(`input[name="${operator}Prefix"]`);
       const allChecked = Array.from(checkboxes).every(cb => cb.checked);
       
@@ -740,11 +740,12 @@ function initializeEventListeners() {
     });
   });
 
-  // Add operator checkbox listeners
+  // Add operator checkbox listeners with proper handling for TransnistriaIDC
   document.querySelectorAll('.operator-group > label > input[type="checkbox"]').forEach(checkbox => {
     checkbox.addEventListener('change', function() {
       const operatorGroup = this.closest('.operator-group');
       const operator = operatorGroup.getAttribute('data-operator');
+      // Use correct attribute selector that matches the HTML
       const prefixCheckboxes = operatorGroup.querySelectorAll(`input[name="${operator}Prefix"]`);
       prefixCheckboxes.forEach(prefixCheckbox => {
         prefixCheckbox.checked = this.checked;
