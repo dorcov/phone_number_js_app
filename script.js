@@ -1083,7 +1083,7 @@ async function generateFreshNumbers() {
     .filter(op => document.getElementById(`generate${op}`).checked)
     .map(op => ({
       operator: op,
-      prefixes: Array.from(document.querySelectorAll(`input[name="${op.toLowerCase()}Prefix"]:checked`))
+      prefixes: Array.from(document.querySelectorAll(`input[name="${op.toLowerCase().replace('idc', '_idc')}Prefix"]:checked`))
                     .map(checkbox => checkbox.value)
     }))
     .filter(op => op.prefixes.length > 0);
