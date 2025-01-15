@@ -328,6 +328,12 @@ function updateSourceStats(sourceData) {
  * 3) Main Logic
  ***********************************************/
 async function generateNumbers() {
+  const generationMode = document.querySelector('input[name="generationMode"]:checked').value;
+  
+  if (generationMode === 'fresh') {
+    return generateFreshNumbers();
+  }
+  
   const sourceFileEl = document.getElementById('sourceFile');
   const blacklistFileEl = document.getElementById('blacklistFile');
   const variationsEl = document.getElementById('variations');
@@ -629,6 +635,97 @@ document.getElementById('sourceFile').addEventListener('change', async (event) =
     }
   }
 });
+
+// Add after the event listeners section:
+document.querySelectorAll('input[name="generationMode"]').forEach(radio => {
+  radio.addEventListener('change', (e) => {
+    const sourceElements = document.querySelectorAll('.file-input-group');
+    const freshOptions = document.getElementById('freshGenerationOptions');
+    
+    if (e.target.value === 'fresh') {
+      sourceElements.forEach(el => el.classList.add('hidden'));
+      freshOptions.classList.remove('hidden');
+    } else {
+      sourceElements.forEach(el => el.classList.remove('hidden'));
+      freshOptions.classList.add('hidden');
+    }
+  });
+});
+
+// Add new function for fresh number generation
+async function generateFreshNumbers() {
+  const errorMsgEl = document.getElementById('errorMsg');
+  const counters = { processed: 0, generated: 0, rejected: 0 };
+  const operatorCounts = {
+    Orange: { original: 0, generated: 0 },
+    Moldcell: { original: 0, generated: 0 },
+    Unite: { original: 0, generated: 0 },
+    Moldtelecom: { original: 0, generated: 0 }
+  };
+
+  // Get requested counts
+  const counts = {
+    Orange: parseInt(document.getElementById('orangeCount').value) || 0,
+    Moldcell: parseInt(document.getElementById('moldcellCount').value) || 0,
+    Unite: parseInt(document.getElementById('uniteCount').value) || 0,
+    Moldtelecom: parseInt(document.getElementById('moldtelecomCount').value) || 0
+  };
+
+  // Validate input
+  if (Object.values(counts).reduce((a, b) => a + b, 0) === 0) {
+    errorMsgEl.textContent = 'Introduceți cel puțin un număr mai mare ca 0';
+    return null;
+  }
+
+  const generatedNumbers = [];
+  const generatedNumbersSet = new Set();
+  const blacklistSet = new Set();
+
+  // Generate numbers for each operator
+  for (const [operator, count] of Object.entries(counts)) {
+    for (let i = 0; i < count; i++) {
+      let baseNumber;
+      
+      if (operator === 'Moldtelecom') {
+        const validPrefixes = Object.keys(MOLDTELECOM_REGIONAL_PREFIXES);
+        const randomPrefix = validPrefixes[Math.floor(Math.random() * validPrefixes.length)];
+        const neededZeros = 8 - randomPrefix.length;
+        baseNumber = randomPrefix + '0'.repeat(neededZeros);
+      } else {
+        const validPrefixes = OPERATOR_PREFIXES[operator];
+        const randomPrefix = validPrefixes[Math.floor(Math.random() * validPrefixes.length)];
+        const neededZeros = 8 - randomPrefix.length;
+        baseNumber = randomPrefix + '0'.repeat(neededZeros);
+      }
+
+      if (!generatedNumbersSet.has(baseNumber)) {
+        generatedNumbersSet.add(baseNumber);
+        generatedNumbers.push({
+          Phone: baseNumber,
+          Operator: operator,
+          Tip: 'Original (Fresh)'
+        });
+        operatorCounts[operator].original++;
+        counters.generated++;
+      }
+    }
+  }
+
+  // Update UI counters
+  document.getElementById('processedCount').textContent = counters.processed;
+  document.getElementById('generatedCount').textContent = counters.generated;
+  document.getElementById('rejectedCount').textContent = counters.rejected;
+
+  // Update operator-specific counts
+  for (const op of ALL_OPERATORS) {
+    document.getElementById(`${op.toLowerCase()}OriginalCount`).textContent = 
+      operatorCounts[op].original;
+    document.getElementById(`${op.toLowerCase()}GeneratedCount`).textContent = 
+      operatorCounts[op].generated;
+  }
+
+  return generatedNumbers;
+}
 
 /************************************************
  * 6) Template Generation Functions

@@ -26,6 +26,40 @@
       <button class="template-btn" id="blacklistTemplateBtn">Descarcă Template Blacklist</button>
     </div>
 
+    <!-- Add after the file input groups -->
+    <div class="generation-mode-switch">
+      <label>
+        <input type="radio" name="generationMode" value="fromSource" checked>
+        Generare din sursă
+      </label>
+      <label>
+        <input type="radio" name="generationMode" value="fresh">
+        Generare numere noi
+      </label>
+    </div>
+
+    <div id="freshGenerationOptions" class="hidden">
+      <h3>Opțiuni pentru generare nouă</h3>
+      <div class="operator-counts">
+        <div class="operator-input">
+          <label for="orangeCount">Orange:</label>
+          <input type="number" id="orangeCount" min="0" value="0">
+        </div>
+        <div class="operator-input">
+          <label for="moldcellCount">Moldcell:</label>
+          <input type="number" id="moldcellCount" min="0" value="0">
+        </div>
+        <div class="operator-input">
+          <label for="uniteCount">Unite:</label>
+          <input type="number" id="uniteCount" min="0" value="0">
+        </div>
+        <div class="operator-input">
+          <label for="moldtelecomCount">Moldtelecom:</label>
+          <input type="number" id="moldtelecomCount" min="0" value="0">
+        </div>
+      </div>
+    </div>
+
     <div id="missingOperators" class="alert hidden">
       <h4>Operatori lipsă în sursă:</h4>
       <div id="missingOperatorsList" class="checkbox-group">

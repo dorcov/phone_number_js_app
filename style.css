@@ -200,3 +200,44 @@ button:focus {
 #missingOperatorsList input[type="checkbox"] {
   margin: 0;
 }
+
+.generation-mode-switch {
+  margin: 20px 0;
+  padding: 15px;
+  background: var(--card-bg);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.generation-mode-switch label {
+  display: inline-block;
+  margin-right: 20px;
+}
+
+.operator-counts {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin: 15px 0;
+}
+
+.operator-input {
+  background: var(--card-bg);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.operator-input label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.operator-input input {
+  width: 100%;
+  padding: 8px;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  border-radius: 4px;
+}
