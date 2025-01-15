@@ -628,6 +628,22 @@ document.getElementById('sourceFile').addEventListener('change', async (event) =
   }
 });
 
+// Modify the radio button event listener to not hide blacklist in fresh mode
+document.querySelectorAll('input[name="generationMode"]').forEach(radio => {
+  radio.addEventListener('change', (e) => {
+    const sourceElements = document.querySelectorAll('.file-input-group:not(:has(#blacklistFile))');
+    const freshOptions = document.getElementById('freshGenerationOptions');
+    
+    if (e.target.value === 'fresh') {
+      sourceElements.forEach(el => el.classList.add('hidden'));
+      freshOptions.classList.remove('hidden');
+    } else {
+      sourceElements.forEach(el => el.classList.remove('hidden'));
+      freshOptions.classList.add('hidden');
+    }
+  });
+});
+
 // Add after the event listeners section:
 document.querySelectorAll('input[name="generationMode"]').forEach(radio => {
   radio.addEventListener('change', (e) => {
