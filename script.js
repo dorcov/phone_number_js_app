@@ -6,7 +6,8 @@ const OPERATOR_PREFIXES = {
   'Moldcell': ['76','78','79'],
   'Unite': ['66','67'],
   'Moldtelecom': ['2'],
-  'Transnistria': ['210', '215', '216', '219', '552', '533', '555', '557']
+  'Transnistria': ['210', '215', '216', '219', '552', '533', '555', '557'],
+  'TransnistriaIDC': ['774', '777', '778', '779']
 };
 
 const MOLDTELECOM_REGIONAL_PREFIXES = {
@@ -60,7 +61,7 @@ const TRANSNISTRIA_PREFIXES = {
   '557': 'Slobozia'
 };
 
-const ALL_OPERATORS = ['Orange', 'Moldcell', 'Unite', 'Moldtelecom', 'Transnistria'];
+const ALL_OPERATORS = ['Orange', 'Moldcell', 'Unite', 'Moldtelecom', 'Transnistria', 'TransnistriaIDC'];
 
 /************************************************
  * 2) Utility / Helper Functions
@@ -367,7 +368,8 @@ function updateSourceStats(sourceData) {
     Moldcell: 0,
     Unite: 0,
     Moldtelecom: 0,
-    Transnistria: 0 // Add Transnistria
+    Transnistria: 0, // Add Transnistria
+    TransnistriaIDC: 0 // Add TransnistriaIDC
   };
 
   sourceData.forEach(row => {
@@ -422,7 +424,8 @@ async function generateNumbers() {
     Moldcell: { original: 0, generated: 0 },
     Unite: { original: 0, generated: 0 },
     Moldtelecom: { original: 0, generated: 0 },
-    Transnistria: { original: 0, generated: 0 } // Add Transnistria
+    Transnistria: { original: 0, generated: 0 }, // Add Transnistria
+    TransnistriaIDC: { original: 0, generated: 0 } // Add TransnistriaIDC
   };
 
   // Initialize counters object
@@ -770,7 +773,7 @@ function generateRandomSeedNumber(prefix) {
 
 // Add this new helper function
 function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
+  for (let i = array.length - 1; i > 0; i++) {
     const j = Math.floor(Math.random() * (i + 1));
     [array[i], array[j]] = [array[j], array[i]];
   }
@@ -809,7 +812,8 @@ async function generateNumbers() {
     Moldcell: { original: 0, generated: 0 },
     Unite: { original: 0, generated: 0 },
     Moldtelecom: { original: 0, generated: 0 },
-    Transnistria: { original: 0, generated: 0 } // Add Transnistria
+    Transnistria: { original: 0, generated: 0 }, // Add Transnistria
+    TransnistriaIDC: { original: 0, generated: 0 } // Add TransnistriaIDC
   };
 
   // Initialize counters object
@@ -1020,7 +1024,8 @@ async function generateFreshNumbers() {
     Moldcell: { original: 0, generated: 0 },
     Unite: { original: 0, generated: 0 },
     Moldtelecom: { original: 0, generated: 0 },
-    Transnistria: { original: 0, generated: 0 } // Add Transnistria
+    Transnistria: { original: 0, generated: 0 }, // Add Transnistria
+    TransnistriaIDC: { original: 0, generated: 0 } // Add TransnistriaIDC
   };
 
   // Get selected operators and their prefixes

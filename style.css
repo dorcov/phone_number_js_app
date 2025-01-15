@@ -174,7 +174,8 @@ select[multiple] {
 .operator-stat:nth-child(2) { border-color: #7f00ff; } /* Moldcell - brighter */
 .operator-stat:nth-child(3) { border-color: #ff0000; } /* Unite - brighter */
 .operator-stat:nth-child(4) { border-color: #66BB6A; } /* Moldtelecom - brighter */
-.operator-stat:nth-child(5) { border-color: #c41e3a; } /* Transnistria - dark red */
+.operator-stat:nth-child(5) { border-color: #0d00c1; } /* Transnistria - dark red */
+.operator-stat:nth-child(6) { border-color: #0b6781; } /* Transnistria IDC - burgundy */
 
 /* Better focus styles for dark mode */
 input:focus,
@@ -299,6 +300,10 @@ button:focus {
 
 .operator-group[data-operator="transnistria"] {
   border-color: #c41e3a; /* Dark red for Transnistria */
+}
+
+.operator-group[data-operator="transnistria-idc"] {
+  border-color: #800020; /* Burgundy for Transnistria IDC */
 }
 
 .prefix-checkboxes {
