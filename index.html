@@ -39,24 +39,24 @@
     </div>
 
     <div id="freshGenerationOptions" class="hidden">
-      <h3>Opțiuni pentru generare nouă</h3>
-      <div class="operator-counts">
-        <div class="operator-input">
-          <label for="orangeCount">Orange:</label>
-          <input type="number" id="orangeCount" min="0" value="0">
-        </div>
-        <div class="operator-input">
-          <label for="moldcellCount">Moldcell:</label>
-          <input type="number" id="moldcellCount" min="0" value="0">
-        </div>
-        <div class="operator-input">
-          <label for="uniteCount">Unite:</label>
-          <input type="number" id="uniteCount" min="0" value="0">
-        </div>
-        <div class="operator-input">
-          <label for="moldtelecomCount">Moldtelecom:</label>
-          <input type="number" id="moldtelecomCount" min="0" value="0">
-        </div>
+      <h3>Selectați operatorii pentru generare:</h3>
+      <div class="operator-selection checkbox-group">
+        <label>
+          <input type="checkbox" id="generateOrange" checked>
+          Orange
+        </label>
+        <label>
+          <input type="checkbox" id="generateMoldcell" checked>
+          Moldcell
+        </label>
+        <label>
+          <input type="checkbox" id="generateUnite" checked>
+          Unite
+        </label>
+        <label>
+          <input type="checkbox" id="generateMoldtelecom" checked>
+          Moldtelecom
+        </label>
       </div>
     </div>
 

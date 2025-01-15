@@ -669,17 +669,14 @@ async function generateFreshNumbers() {
     Moldtelecom: { original: 0, generated: 0 }
   };
 
-  // Get requested counts
-  const counts = {
-    Orange: parseInt(document.getElementById('orangeCount').value) || 0,
-    Moldcell: parseInt(document.getElementById('moldcellCount').value) || 0,
-    Unite: parseInt(document.getElementById('uniteCount').value) || 0,
-    Moldtelecom: parseInt(document.getElementById('moldtelecomCount').value) || 0
-  };
+  // Get selected operators
+  const selectedOperators = ALL_OPERATORS.filter(op => 
+    document.getElementById(`generate${op}`).checked
+  );
 
-  // Validate input
-  if (Object.values(counts).reduce((a, b) => a + b, 0) === 0) {
-    errorMsgEl.textContent = 'Introduceți cel puțin un număr mai mare ca 0';
+  // Validate selection
+  if (selectedOperators.length === 0) {
+    errorMsgEl.textContent = 'Selectați cel puțin un operator';
     return null;
   }
 
@@ -687,64 +684,50 @@ async function generateFreshNumbers() {
   const generatedNumbersSet = new Set();
   const blacklistSet = new Set();
 
-  // Calculate seeds needed for each operator
-  for (const [operator, count] of Object.entries(counts)) {
-    if (count > 0) {
-      // Calculate how many seed numbers we need based on variations
-      const seedsNeeded = Math.ceil(count / (variations + 1)); // +1 includes the seed itself
-      
-      for (let i = 0; i < seedsNeeded; i++) {
-        let baseNumber;
-        let attempts = 0;
-        const maxAttempts = 10; // Prevent infinite loops
-        
-        // Keep trying until we get a unique seed number
-        do {
-          if (operator === 'Moldtelecom') {
-            const validPrefixes = Object.keys(MOLDTELECOM_REGIONAL_PREFIXES);
-            const randomPrefix = validPrefixes[Math.floor(Math.random() * validPrefixes.length)];
-            const neededZeros = 8 - randomPrefix.length;
-            baseNumber = randomPrefix + '0'.repeat(neededZeros);
-          } else {
-            const validPrefixes = OPERATOR_PREFIXES[operator];
-            const randomPrefix = validPrefixes[Math.floor(Math.random() * validPrefixes.length)];
-            const neededZeros = 8 - randomPrefix.length;
-            baseNumber = randomPrefix + '0'.repeat(neededZeros);
-          }
-          attempts++;
-        } while (generatedNumbersSet.has(baseNumber) && attempts < maxAttempts);
+  // Generate numbers for each selected operator
+  for (const operator of selectedOperators) {
+    let baseNumber;
+    let attempts = 0;
+    const maxAttempts = 10;
 
-        if (!generatedNumbersSet.has(baseNumber)) {
-          // Add seed number
-          generatedNumbersSet.add(baseNumber);
-          generatedNumbers.push({
-            Phone: baseNumber,
-            Operator: operator,
-            Tip: 'Original (Fresh)'
-          });
-          operatorCounts[operator].original++;
-          counters.generated++;
-
-          // Generate variations for this seed
-          await generateVariationsForOperator(
-            baseNumber,
-            operator,
-            variations,
-            digitsToVary,
-            blacklistSet,
-            generatedNumbers,
-            generatedNumbersSet,
-            operatorCounts,
-            counters
-          );
-        }
-
-        // Check if we've generated enough numbers for this operator
-        const currentOperatorCount = generatedNumbers.filter(n => n.Operator === operator).length;
-        if (currentOperatorCount >= count) {
-          break;
-        }
+    // Generate initial seed number
+    do {
+      if (operator === 'Moldtelecom') {
+        const validPrefixes = Object.keys(MOLDTELECOM_REGIONAL_PREFIXES);
+        const randomPrefix = validPrefixes[Math.floor(Math.random() * validPrefixes.length)];
+        const neededZeros = 8 - randomPrefix.length;
+        baseNumber = randomPrefix + '0'.repeat(neededZeros);
+      } else {
+        const validPrefixes = OPERATOR_PREFIXES[operator];
+        const randomPrefix = validPrefixes[Math.floor(Math.random() * validPrefixes.length)];
+        const neededZeros = 8 - randomPrefix.length;
+        baseNumber = randomPrefix + '0'.repeat(neededZeros);
       }
+      attempts++;
+    } while (generatedNumbersSet.has(baseNumber) && attempts < maxAttempts);
+
+    if (!generatedNumbersSet.has(baseNumber)) {
+      generatedNumbersSet.add(baseNumber);
+      generatedNumbers.push({
+        Phone: baseNumber,
+        Operator: operator,
+        Tip: 'Original (Fresh)'
+      });
+      operatorCounts[operator].original++;
+      counters.generated++;
+
+      // Generate variations for the seed number
+      await generateVariationsForOperator(
+        baseNumber,
+        operator,
+        variations,
+        digitsToVary,
+        blacklistSet,
+        generatedNumbers,
+        generatedNumbersSet,
+        operatorCounts,
+        counters
+      );
     }
   }
 
@@ -761,27 +744,7 @@ async function generateFreshNumbers() {
       operatorCounts[op].generated;
   }
 
-  // Change the filtering logic to create a new array instead of reassigning
-  let finalNumbers = generatedNumbers.slice(); // Create a copy of the original array
-
-  // Remove extra numbers if we generated too many
-  for (const operator of ALL_OPERATORS) {
-    const targetCount = counts[operator];
-    let operatorNumbers = finalNumbers.filter(n => n.Operator === operator);
-    if (operatorNumbers.length > targetCount) {
-      const numbersToRemove = operatorNumbers.length - targetCount;
-      const indexesToRemove = new Set();
-      while (indexesToRemove.size < numbersToRemove) {
-        indexesToRemove.add(Math.floor(Math.random() * operatorNumbers.length));
-      }
-      
-      finalNumbers = finalNumbers.filter((num, index) => 
-        num.Operator !== operator || !indexesToRemove.has(index)
-      );
-    }
-  }
-
-  return finalNumbers;
+  return generatedNumbers;
 }
 
 /************************************************
