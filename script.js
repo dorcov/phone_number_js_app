@@ -649,6 +649,7 @@ async function generateFreshNumbers() {
   const errorMsgEl = document.getElementById('errorMsg');
   const variationsEl = document.getElementById('variations');
   const digitsToVaryEl = document.getElementById('digitsToVary');
+  const blacklistFileEl = document.getElementById('blacklistFile');
   
   const variations = parseInt(variationsEl.value, 10);
   const digitsToVary = parseInt(digitsToVaryEl.value, 10);
@@ -681,19 +682,44 @@ async function generateFreshNumbers() {
   const generatedNumbersSet = new Set();
   const blacklistSet = new Set();
 
+  // Build blacklist Set
+  if (blacklistFileEl.files.length) {
+    try {
+      const blacklistData = await readExcelFile(blacklistFileEl.files[0]);
+      for (const row of blacklistData) {
+        const cleaned = cleanSourceNumber(row.Phone);
+        if (cleaned) blacklistSet.add(cleaned);
+      }
+    } catch (err) {
+      errorMsgEl.textContent = 'Eroare la citirea fișierului blacklist: ' + err.message;
+      return null;
+    }
+  }
+
   // Generate one seed number for each selected prefix
   for (const { operator, prefixes } of selectedOperatorsAndPrefixes) {
     // Process each prefix for this operator
     for (const prefix of prefixes) {
-      // Generate random seed number for this prefix
-      const baseNumber = generateRandomSeedNumber(prefix);
+      let baseNumber;
+      let attempts = 0;
+      const maxAttempts = 50; // Increase max attempts to find valid number
 
-      if (!generatedNumbersSet.has(baseNumber)) {
+      // Keep trying until we get a valid seed number that's not in blacklist
+      do {
+        baseNumber = generateRandomSeedNumber(prefix);
+        attempts++;
+      } while (
+        (generatedNumbersSet.has(baseNumber) || blacklistSet.has(baseNumber)) && 
+        attempts < maxAttempts
+      );
+
+      // Only proceed if we found a valid number
+      if (!generatedNumbersSet.has(baseNumber) && !blacklistSet.has(baseNumber)) {
         generatedNumbersSet.add(baseNumber);
         generatedNumbers.push({
           Phone: baseNumber,
           Operator: operator,
-          Tip: 'Original (Fresh)'
+          Tip: 'Original (Nou)'
         });
         operatorCounts[operator].original++;
         counters.generated++;
