@@ -628,10 +628,10 @@ document.getElementById('sourceFile').addEventListener('change', async (event) =
   }
 });
 
-// Modify the radio button event listener to not hide blacklist in fresh mode
+// Update the radio button event listener
 document.querySelectorAll('input[name="generationMode"]').forEach(radio => {
   radio.addEventListener('change', (e) => {
-    const sourceElements = document.querySelectorAll('.file-input-group:not(:has(#blacklistFile))');
+    const sourceElements = document.querySelectorAll('.source-only');
     const freshOptions = document.getElementById('freshGenerationOptions');
     
     if (e.target.value === 'fresh') {
@@ -641,6 +641,30 @@ document.querySelectorAll('input[name="generationMode"]').forEach(radio => {
       sourceElements.forEach(el => el.classList.remove('hidden'));
       freshOptions.classList.add('hidden');
     }
+  });
+});
+
+// Add to Event Listeners section
+document.querySelectorAll('.select-all-btn').forEach(button => {
+  button.addEventListener('click', (e) => {
+    const prefix = e.target.dataset.prefix;
+    const checkboxes = document.querySelectorAll(`input[name="${prefix}Prefix"]`);
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = !allChecked;
+    });
+  });
+});
+
+// Add checkbox link between operator and its prefixes
+document.querySelectorAll('.operator-group > label > input[type="checkbox"]').forEach(operatorCheckbox => {
+  operatorCheckbox.addEventListener('change', (e) => {
+    const operator = e.target.id.replace('generate', '').toLowerCase();
+    const prefixCheckboxes = document.querySelectorAll(`input[name="${operator}Prefix"]`);
+    prefixCheckboxes.forEach(checkbox => {
+      checkbox.checked = e.target.checked;
+    });
   });
 });
 

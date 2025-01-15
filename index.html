@@ -25,25 +25,19 @@
       </label>
     </div>
 
-    <div class="file-input-group">
-      <label for="sourceFile">Numere Sursă (Excel):</label>
-      <input type="file" id="sourceFile" accept=".xlsx,.xls" />
-      <button class="template-btn" id="sourceTemplateBtn">Descarcă Template Sursă</button>
-    </div>
-
-    <div class="file-input-group">
+    <div class="file-input-group" id="blacklistGroup">
       <label for="blacklistFile">Lista Neagră (Excel) [Opțional]:</label>
       <input type="file" id="blacklistFile" accept=".xlsx,.xls" />
       <button class="template-btn" id="blacklistTemplateBtn">Descarcă Template Blacklist</button>
     </div>
 
-    <div id="freshGenerationOptions" class="hidden">
-      <div class="file-input-group">
-        <label for="blacklistFile">Lista Neagră (Excel) [Opțional]:</label>
-        <input type="file" id="blacklistFile" accept=".xlsx,.xls" />
-        <button class="template-btn" id="blacklistTemplateBtn">Descarcă Template Blacklist</button>
-      </div>
+    <div class="file-input-group source-only">
+      <label for="sourceFile">Numere Sursă (Excel):</label>
+      <input type="file" id="sourceFile" accept=".xlsx,.xls" />
+      <button class="template-btn" id="sourceTemplateBtn">Descarcă Template Sursă</button>
+    </div>
 
+    <div id="freshGenerationOptions" class="hidden">
       <h3>Selectați operatorii și prefixele pentru generare:</h3>
       <div class="operator-prefixes">
         <div class="operator-group" data-operator="orange">
