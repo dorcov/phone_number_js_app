@@ -655,208 +655,46 @@ function downloadExcel(jsonData) {
 }
 
 /************************************************
- * 5) Event Listeners
+ * 5) Event Listeners - CORRECTED VERSION
  ***********************************************/
-document.getElementById('generateBtn').addEventListener('click', async () => {
-  const generatedNumbers = await generateNumbers();
-  if (generatedNumbers) {
-    // Show the output section
-    document.getElementById('output-section').classList.remove('hidden');
-    
-    // Store the generated numbers for download
-    document.getElementById('downloadBtn').onclick = () => {
-      downloadExcel(generatedNumbers);
-    };
-  }
-});
 
-// Add template button event listeners
-document.getElementById('sourceTemplateBtn').addEventListener('click', () => {
-  generateSourceTemplate();
-});
-
-document.getElementById('blacklistTemplateBtn').addEventListener('click', () => {
-  generateBlacklistTemplate();
-});
-
-// Add source file change event listener
-document.getElementById('sourceFile').addEventListener('change', async (event) => {
-  if (event.target.files.length) {
-    try {
-      await readExcelFile(event.target.files[0]);
-    } catch (err) {
-      document.getElementById('errorMsg').textContent = 'Eroare la citirea fișierului: ' + err.message;
-    }
-  }
-});
-
-// Update the radio button event listener
-document.querySelectorAll('input[name="generationMode"]').forEach(radio => {
-  radio.addEventListener('change', (e) => {
-    const sourceElements = document.querySelectorAll('.source-only');
-    const freshOptions = document.getElementById('freshGenerationOptions');
-    
-    if (e.target.value === 'fresh') {
-      sourceElements.forEach(el => el.classList.add('hidden'));
-      freshOptions.classList.remove('hidden');
-      document.getElementById('missingOperators').classList.add('hidden');
-    } else {
-      sourceElements.forEach(el => el.classList.remove('hidden'));
-      freshOptions.classList.add('hidden');
-    }
+// Remove any duplicate event listeners by only defining them once
+function initializeEventListeners() {
+  // Remove existing listeners first
+  document.querySelectorAll('.select-all-btn').forEach(button => {
+    const newButton = button.cloneNode(true);
+    button.parentNode.replaceChild(newButton, button);
   });
-});
 
-// Add to Event Listeners section
-document.querySelectorAll('.select-all-btn').forEach(button => {
-  button.addEventListener('click', (e) => {
-    const operator = button.getAttribute('data-prefix');
-    const checkboxes = document.querySelectorAll(`input[name="${operator}Prefix"]`);
-    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-    checkboxes.forEach(cb => cb.checked = !allChecked);
-  });
-});
-
-// Add checkbox link between operator and its prefixes
-document.querySelectorAll('.operator-group > label > input[type="checkbox"]').forEach(operatorCheckbox => {
-  operatorCheckbox.addEventListener('change', (e) => {
-    const operator = e.target.id.replace('generate', '').toLowerCase();
-    const prefixCheckboxes = document.querySelectorAll(`input[name="${operator}Prefix"]`);
-    prefixCheckboxes.forEach(checkbox => {
-      checkbox.checked = e.target.checked;
+  // Add select-all button listeners
+  document.querySelectorAll('.select-all-btn').forEach(button => {
+    button.addEventListener('click', function() {
+      const operatorGroup = this.closest('.operator-group');
+      const operator = operatorGroup.getAttribute('data-operator');
+      const checkboxes = operatorGroup.querySelectorAll(`input[name="${operator}Prefix"]`);
+      const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+      
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = !allChecked;
+      });
     });
   });
-});
 
-// Add after the event listeners section:
-document.querySelectorAll('input[name="generationMode"]').forEach(radio => {
-  radio.addEventListener('change', (e) => {
-    const sourceElements = document.querySelectorAll('.file-input-group');
-    const freshOptions = document.getElementById('freshGenerationOptions');
-    
-    if (e.target.value === 'fresh') {
-      sourceElements.forEach(el => el.classList.add('hidden'));
-      freshOptions.classList.remove('hidden');
-    } else {
-      sourceElements.forEach(el => el.classList.remove('hidden'));
-      freshOptions.classList.add('hidden');
-    }
+  // Add operator checkbox listeners
+  document.querySelectorAll('.operator-group > label > input[type="checkbox"]').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      const operatorGroup = this.closest('.operator-group');
+      const operator = operatorGroup.getAttribute('data-operator');
+      const prefixCheckboxes = operatorGroup.querySelectorAll(`input[name="${operator}Prefix"]`);
+      prefixCheckboxes.forEach(prefixCheckbox => {
+        prefixCheckbox.checked = this.checked;
+      });
+    });
   });
-});
-
-// Add new function for fresh number generation
-async function generateFreshNumbers() {
-  const errorMsgEl = document.getElementById('errorMsg');
-  const variationsEl = document.getElementById('variations');
-  const digitsToVaryEl = document.getElementById('digitsToVary');
-  const blacklistFileEl = document.getElementById('blacklistFile');
-  
-  const variations = parseInt(variationsEl.value, 10);
-  const digitsToVary = parseInt(digitsToVaryEl.value, 10);
-  
-  const counters = { processed: 0, generated: 0, rejected: 0 };
-  const operatorCounts = {
-    Orange: { original: 0, generated: 0 },
-    Moldcell: { original: 0, generated: 0 },
-    Unite: { original: 0, generated: 0 },
-    Moldtelecom: { original: 0, generated: 0 },
-    Transnistria: { original: 0, generated: 0 } // Add Transnistria
-  };
-
-  // Get selected operators and their prefixes
-  const selectedOperatorsAndPrefixes = ALL_OPERATORS
-    .filter(op => document.getElementById(`generate${op}`).checked)
-    .map(op => ({
-      operator: op,
-      prefixes: Array.from(document.querySelectorAll(`input[name="${op.toLowerCase()}Prefix"]:checked`))
-                    .map(checkbox => checkbox.value)
-    }))
-    .filter(op => op.prefixes.length > 0);
-
-  // Validate selection
-  if (selectedOperatorsAndPrefixes.length === 0) {
-    errorMsgEl.textContent = 'Selectați cel puțin un operator și prefix';
-    return null;
-  }
-
-  const generatedNumbers = [];
-  const generatedNumbersSet = new Set();
-  const blacklistSet = new Set();
-
-  // Build blacklist Set
-  if (blacklistFileEl.files.length) {
-    try {
-      const blacklistData = await readExcelFile(blacklistFileEl.files[0]);
-      for (const row of blacklistData) {
-        const cleaned = cleanSourceNumber(row.Phone);
-        if (cleaned) blacklistSet.add(cleaned);
-      }
-    } catch (err) {
-      errorMsgEl.textContent = 'Eroare la citirea fișierului blacklist: ' + err.message;
-      return null;
-    }
-  }
-
-  // Generate one seed number for each selected prefix
-  for (const { operator, prefixes } of selectedOperatorsAndPrefixes) {
-    // Process each prefix for this operator
-    for (const prefix of prefixes) {
-      let baseNumber;
-      let attempts = 0;
-      const maxAttempts = 50; // Increase max attempts to find valid number
-
-      // Keep trying until we get a valid seed number that's not in blacklist
-      do {
-        baseNumber = generateRandomSeedNumber(prefix);
-        attempts++;
-      } while (
-        (generatedNumbersSet.has(baseNumber) || blacklistSet.has(baseNumber)) && 
-        attempts < maxAttempts
-      );
-
-      // Only proceed if we found a valid number
-      if (!generatedNumbersSet.has(baseNumber) && !blacklistSet.has(baseNumber)) {
-        generatedNumbersSet.add(baseNumber);
-        generatedNumbers.push({
-          Phone: baseNumber,
-          Operator: operator,
-          Tip: 'Original (Nou)'
-        });
-        operatorCounts[operator].original++;
-        counters.generated++;
-
-        // Generate variations for this seed
-        await generateVariationsForOperator(
-          baseNumber,
-          operator,
-          variations,
-          digitsToVary,
-          blacklistSet,
-          generatedNumbers,
-          generatedNumbersSet,
-          operatorCounts,
-          counters
-        );
-      }
-    }
-  }
-
-  // Update UI counters
-  document.getElementById('processedCount').textContent = counters.processed;
-  document.getElementById('generatedCount').textContent = counters.generated;
-  document.getElementById('rejectedCount').textContent = counters.rejected;
-
-  // Update operator-specific counts
-  for (const op of ALL_OPERATORS) {
-    document.getElementById(`${op.toLowerCase()}OriginalCount`).textContent = 
-      operatorCounts[op].original;
-    document.getElementById(`${op.toLowerCase()}GeneratedCount`).textContent = 
-      operatorCounts[op].generated;
-  }
-
-  shuffleArray(generatedNumbers);
-  return generatedNumbers;
 }
+
+// Call the initialization function when the page loads
+document.addEventListener('DOMContentLoaded', initializeEventListeners);
 
 /************************************************
  * 6) Template Generation Functions
@@ -896,30 +734,6 @@ function generateBlacklistTemplate() {
   XLSX.utils.book_append_sheet(wb, ws, 'Template');
   XLSX.writeFile(wb, 'template_blacklist.xlsx');
 }
-
-// Add to Event Listeners section
-document.querySelectorAll('.select-all-btn').forEach(button => {
-  button.addEventListener('click', (e) => {
-    const prefix = e.target.dataset.prefix;
-    const checkboxes = document.querySelectorAll(`input[name="${prefix}Prefix"]`);
-    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-    
-    checkboxes.forEach(checkbox => {
-      checkbox.checked = !allChecked;
-    });
-  });
-});
-
-// Add checkbox link between operator and its prefixes
-document.querySelectorAll('.operator-group > label > input[type="checkbox"]').forEach(operatorCheckbox => {
-  operatorCheckbox.addEventListener('change', (e) => {
-    const operator = e.target.id.replace('generate', '').toLowerCase();
-    const prefixCheckboxes = document.querySelectorAll(`input[name="${operator}Prefix"]`);
-    prefixCheckboxes.forEach(checkbox => {
-      checkbox.checked = e.target.checked;
-    });
-  });
-});
 
 // Add this helper function at the start of the file after the constants
 function generateRandomSeedNumber(prefix) {
@@ -1180,3 +994,207 @@ async function generateNumbers() {
   shuffleArray(generatedNumbers);
   return generatedNumbers;
 }
+
+// Add new function for fresh number generation
+async function generateFreshNumbers() {
+  const errorMsgEl = document.getElementById('errorMsg');
+  const variationsEl = document.getElementById('variations');
+  const digitsToVaryEl = document.getElementById('digitsToVary');
+  const blacklistFileEl = document.getElementById('blacklistFile');
+  
+  const variations = parseInt(variationsEl.value, 10);
+  const digitsToVary = parseInt(digitsToVaryEl.value, 10);
+  
+  const counters = { processed: 0, generated: 0, rejected: 0 };
+  const operatorCounts = {
+    Orange: { original: 0, generated: 0 },
+    Moldcell: { original: 0, generated: 0 },
+    Unite: { original: 0, generated: 0 },
+    Moldtelecom: { original: 0, generated: 0 },
+    Transnistria: { original: 0, generated: 0 } // Add Transnistria
+  };
+
+  // Get selected operators and their prefixes
+  const selectedOperatorsAndPrefixes = ALL_OPERATORS
+    .filter(op => document.getElementById(`generate${op}`).checked)
+    .map(op => ({
+      operator: op,
+      prefixes: Array.from(document.querySelectorAll(`input[name="${op.toLowerCase()}Prefix"]:checked`))
+                    .map(checkbox => checkbox.value)
+    }))
+    .filter(op => op.prefixes.length > 0);
+
+  // Validate selection
+  if (selectedOperatorsAndPrefixes.length === 0) {
+    errorMsgEl.textContent = 'Selectați cel puțin un operator și prefix';
+    return null;
+  }
+
+  const generatedNumbers = [];
+  const generatedNumbersSet = new Set();
+  const blacklistSet = new Set();
+
+  // Build blacklist Set
+  if (blacklistFileEl.files.length) {
+    try {
+      const blacklistData = await readExcelFile(blacklistFileEl.files[0]);
+      for (const row of blacklistData) {
+        const cleaned = cleanSourceNumber(row.Phone);
+        if (cleaned) blacklistSet.add(cleaned);
+      }
+    } catch (err) {
+      errorMsgEl.textContent = 'Eroare la citirea fișierului blacklist: ' + err.message;
+      return null;
+    }
+  }
+
+  // Generate one seed number for each selected prefix
+  for (const { operator, prefixes } of selectedOperatorsAndPrefixes) {
+    // Process each prefix for this operator
+    for (const prefix of prefixes) {
+      let baseNumber;
+      let attempts = 0;
+      const maxAttempts = 50; // Increase max attempts to find valid number
+
+      // Keep trying until we get a valid seed number that's not in blacklist
+      do {
+        baseNumber = generateRandomSeedNumber(prefix);
+        attempts++;
+      } while (
+        (generatedNumbersSet.has(baseNumber) || blacklistSet.has(baseNumber)) && 
+        attempts < maxAttempts
+      );
+
+      // Only proceed if we found a valid number
+      if (!generatedNumbersSet.has(baseNumber) && !blacklistSet.has(baseNumber)) {
+        generatedNumbersSet.add(baseNumber);
+        generatedNumbers.push({
+          Phone: baseNumber,
+          Operator: operator,
+          Tip: 'Original (Nou)'
+        });
+        operatorCounts[operator].original++;
+        counters.generated++;
+
+        // Generate variations for this seed
+        await generateVariationsForOperator(
+          baseNumber,
+          operator,
+          variations,
+          digitsToVary,
+          blacklistSet,
+          generatedNumbers,
+          generatedNumbersSet,
+          operatorCounts,
+          counters
+        );
+      }
+    }
+  }
+
+  // Update UI counters
+  document.getElementById('processedCount').textContent = counters.processed;
+  document.getElementById('generatedCount').textContent = counters.generated;
+  document.getElementById('rejectedCount').textContent = counters.rejected;
+
+  // Update operator-specific counts
+  for (const op of ALL_OPERATORS) {
+    document.getElementById(`${op.toLowerCase()}OriginalCount`).textContent = 
+      operatorCounts[op].original;
+    document.getElementById(`${op.toLowerCase()}GeneratedCount`).textContent = 
+      operatorCounts[op].generated;
+  }
+
+  shuffleArray(generatedNumbers);
+  return generatedNumbers;
+}
+
+/************************************************
+ * 5) Event Listeners
+ ***********************************************/
+document.getElementById('generateBtn').addEventListener('click', async () => {
+  const generatedNumbers = await generateNumbers();
+  if (generatedNumbers) {
+    // Show the output section
+    document.getElementById('output-section').classList.remove('hidden');
+    
+    // Store the generated numbers for download
+    document.getElementById('downloadBtn').onclick = () => {
+      downloadExcel(generatedNumbers);
+    };
+  }
+});
+
+// Add template button event listeners
+document.getElementById('sourceTemplateBtn').addEventListener('click', () => {
+  generateSourceTemplate();
+});
+
+document.getElementById('blacklistTemplateBtn').addEventListener('click', () => {
+  generateBlacklistTemplate();
+});
+
+// Add source file change event listener
+document.getElementById('sourceFile').addEventListener('change', async (event) => {
+  if (event.target.files.length) {
+    try {
+      await readExcelFile(event.target.files[0]);
+    } catch (err) {
+      document.getElementById('errorMsg').textContent = 'Eroare la citirea fișierului: ' + err.message;
+    }
+  }
+});
+
+// Update the radio button event listener
+document.querySelectorAll('input[name="generationMode"]').forEach(radio => {
+  radio.addEventListener('change', (e) => {
+    const sourceElements = document.querySelectorAll('.source-only');
+    const freshOptions = document.getElementById('freshGenerationOptions');
+    
+    if (e.target.value === 'fresh') {
+      sourceElements.forEach(el => el.classList.add('hidden'));
+      freshOptions.classList.remove('hidden');
+      document.getElementById('missingOperators').classList.add('hidden');
+    } else {
+      sourceElements.forEach(el => el.classList.remove('hidden'));
+      freshOptions.classList.add('hidden');
+    }
+  });
+});
+
+// Add to Event Listeners section
+document.querySelectorAll('.select-all-btn').forEach(button => {
+  button.addEventListener('click', (e) => {
+    const operator = button.getAttribute('data-prefix');
+    const checkboxes = document.querySelectorAll(`input[name="${operator}Prefix"]`);
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    checkboxes.forEach(cb => cb.checked = !allChecked);
+  });
+});
+
+// Add checkbox link between operator and its prefixes
+document.querySelectorAll('.operator-group > label > input[type="checkbox"]').forEach(operatorCheckbox => {
+  operatorCheckbox.addEventListener('change', (e) => {
+    const operator = e.target.id.replace('generate', '').toLowerCase();
+    const prefixCheckboxes = document.querySelectorAll(`input[name="${operator}Prefix"]`);
+    prefixCheckboxes.forEach(checkbox => {
+      checkbox.checked = e.target.checked;
+    });
+  });
+});
+
+// Add after the event listeners section:
+document.querySelectorAll('input[name="generationMode"]').forEach(radio => {
+  radio.addEventListener('change', (e) => {
+    const sourceElements = document.querySelectorAll('.file-input-group');
+    const freshOptions = document.getElementById('freshGenerationOptions');
+    
+    if (e.target.value === 'fresh') {
+      sourceElements.forEach(el => el.classList.add('hidden'));
+      freshOptions.classList.remove('hidden');
+    } else {
+      sourceElements.forEach(el => el.classList.remove('hidden'));
+      freshOptions.classList.add('hidden');
+    }
+  });
+});
