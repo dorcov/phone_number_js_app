@@ -306,6 +306,7 @@ async function generateNumbers() {
   }
 
   const generatedNumbers = [];
+  const generatedNumbersSet = new Set(); // Add this line to track all generated numbers
 
   // Remove operator filter logic
   /*
@@ -324,12 +325,15 @@ async function generateNumbers() {
 
     const operatorName = row.Operator || getRandomOperator();
 
-    generatedNumbers.push({
-      Phone: baseNumber,
-      Operator: operatorName,
-      Tip: 'Original'
-    });
-    operatorCounts[operatorName].original++;
+    if (!generatedNumbersSet.has(baseNumber)) { // Add this check
+      generatedNumbersSet.add(baseNumber);
+      generatedNumbers.push({
+        Phone: baseNumber,
+        Operator: operatorName,
+        Tip: 'Original'
+      });
+      operatorCounts[operatorName].original++;
+    }
 
     await generateVariationsForOperator(
       baseNumber, 
@@ -337,7 +341,8 @@ async function generateNumbers() {
       variations, 
       digitsToVary, 
       blacklistSet, 
-      generatedNumbers, 
+      generatedNumbers,
+      generatedNumbersSet, // Add this parameter
       operatorCounts,
       counters // Adăugăm counters ca parametru
     );
@@ -369,6 +374,7 @@ async function generateNumbers() {
       digitsToVary, 
       blacklistSet, 
       generatedNumbers, 
+      generatedNumbersSet, // Add this parameter
       operatorCounts,
       counters // Adăugăm counters ca parametru
     );
@@ -409,6 +415,7 @@ async function generateNumbers() {
           digitsToVary,
           blacklistSet,
           generatedNumbers,
+          generatedNumbersSet, // Add this parameter
           operatorCounts,
           counters
         );
@@ -439,7 +446,8 @@ async function generateVariationsForOperator(
   variations, 
   digitsToVary, 
   blacklistSet, 
-  generatedNumbers, 
+  generatedNumbers,
+  generatedNumbersSet, // Add this parameter
   operatorCounts,
   counters // Adăugăm parametrul counters
 ) {
@@ -450,7 +458,9 @@ async function generateVariationsForOperator(
   while (successfulVariations < variations && attempts < maxAttempts) {
     attempts++;
     const newNumber = generateNumberVariation(baseNumber, digitsToVary, operator);
-    if (newNumber && !blacklistSet.has(newNumber)) {
+    // Add check for duplicates using generatedNumbersSet
+    if (newNumber && !blacklistSet.has(newNumber) && !generatedNumbersSet.has(newNumber)) {
+      generatedNumbersSet.add(newNumber); // Add to set before pushing
       generatedNumbers.push({
         Phone: newNumber,
         Operator: operator,
