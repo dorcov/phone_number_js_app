@@ -777,3 +777,29 @@ function generateBlacklistTemplate() {
   XLSX.utils.book_append_sheet(wb, ws, 'Template');
   XLSX.writeFile(wb, 'template_blacklist.xlsx');
 }
+
+// Add to Event Listeners section
+document.querySelectorAll('.select-all-btn').forEach(button => {
+  button.addEventListener('click', (e) => {
+    const prefix = e.target.dataset.prefix;
+    const checkboxes = document.querySelectorAll(`input[name="${prefix}Prefix"]`);
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = !allChecked;
+    });
+  });
+});
+
+// Add checkbox link between operator and its prefixes
+document.querySelectorAll('.operator-group > label > input[type="checkbox"]').forEach(operatorCheckbox => {
+  operatorCheckbox.addEventListener('change', (e) => {
+    const operator = e.target.id.replace('generate', '').toLowerCase();
+    const prefixCheckboxes = document.querySelectorAll(`input[name="${operator}Prefix"]`);
+    prefixCheckboxes.forEach(checkbox => {
+      checkbox.checked = e.target.checked;
+    });
+  });
+});
+
+// ...existing code...

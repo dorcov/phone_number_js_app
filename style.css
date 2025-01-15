@@ -317,3 +317,20 @@ button:focus {
 .operator-group select option {
   padding: 5px;
 }
+
+.select-all-btn {
+  font-size: 0.9em;
+  padding: 4px 8px;
+  margin: 5px 0;
+  background: var(--button-bg);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: auto;
+  display: inline-block;
+}
+
+.select-all-btn:hover {
+  background: var(--button-hover);
+}
