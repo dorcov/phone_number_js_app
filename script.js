@@ -674,8 +674,8 @@ async function generateFreshNumbers() {
     .filter(op => document.getElementById(`generate${op}`).checked)
     .map(op => ({
       operator: op,
-      prefixes: Array.from(document.getElementById(`${op.toLowerCase()}Prefixes`).selectedOptions)
-                    .map(option => option.value)
+      prefixes: Array.from(document.querySelectorAll(`input[name="${op.toLowerCase()}Prefix"]:checked`))
+                    .map(checkbox => checkbox.value)
     }))
     .filter(op => op.prefixes.length > 0);
 

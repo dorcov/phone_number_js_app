@@ -46,14 +46,14 @@
             <input type="checkbox" id="generateOrange" checked>
             Orange
           </label>
-          <select id="orangePrefixes" multiple>
-            <option value="60" selected>60 - Orange</option>
-            <option value="61" selected>61 - Orange</option>
-            <option value="62" selected>62 - Orange</option>
-            <option value="66" selected>66 - Orange</option>
-            <option value="68" selected>68 - Orange</option>
-            <option value="69" selected>69 - Orange</option>
-          </select>
+          <div class="prefix-checkboxes">
+            <label><input type="checkbox" name="orangePrefix" value="60" checked>60 - Orange</label>
+            <label><input type="checkbox" name="orangePrefix" value="61" checked>61 - Orange</label>
+            <label><input type="checkbox" name="orangePrefix" value="62" checked>62 - Orange</label>
+            <label><input type="checkbox" name="orangePrefix" value="66" checked>66 - Orange</label>
+            <label><input type="checkbox" name="orangePrefix" value="68" checked>68 - Orange</label>
+            <label><input type="checkbox" name="orangePrefix" value="69" checked>69 - Orange</label>
+          </div>
         </div>
 
         <div class="operator-group">
@@ -61,11 +61,11 @@
             <input type="checkbox" id="generateMoldcell" checked>
             Moldcell
           </label>
-          <select id="moldcellPrefixes" multiple>
-            <option value="76" selected>76 - Moldcell</option>
-            <option value="78" selected>78 - Moldcell</option>
-            <option value="79" selected>79 - Moldcell</option>
-          </select>
+          <div class="prefix-checkboxes">
+            <label><input type="checkbox" name="moldcellPrefix" value="76" checked>76 - Moldcell</label>
+            <label><input type="checkbox" name="moldcellPrefix" value="78" checked>78 - Moldcell</label>
+            <label><input type="checkbox" name="moldcellPrefix" value="79" checked>79 - Moldcell</label>
+          </div>
         </div>
 
         <div class="operator-group">
@@ -73,10 +73,10 @@
             <input type="checkbox" id="generateUnite" checked>
             Unite
           </label>
-          <select id="unitePrefixes" multiple>
-            <option value="66" selected>66 - Unite</option>
-            <option value="67" selected>67 - Unite</option>
-          </select>
+          <div class="prefix-checkboxes">
+            <label><input type="checkbox" name="unitePrefix" value="66" checked>66 - Unite</label>
+            <label><input type="checkbox" name="unitePrefix" value="67" checked>67 - Unite</label>
+          </div>
         </div>
 
         <div class="operator-group">
@@ -84,15 +84,44 @@
             <input type="checkbox" id="generateMoldtelecom" checked>
             Moldtelecom
           </label>
-          <select id="moldtelecomPrefixes" multiple>
-            <option value="22" selected>22 - Chișinău</option>
-            <option value="230">230 - Soroca</option>
-            <option value="231">231 - Bălți</option>
-            <option value="235">235 - Orhei</option>
-            <option value="236">236 - Ungheni</option>
-            <option value="237">237 - Strășeni</option>
-            <!-- Add more options for other regions -->
-          </select>
+          <div class="prefix-checkboxes">
+            <label><input type="checkbox" name="moldtelecomPrefix" value="22" checked>22 - Chișinău</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="230" checked>230 - Soroca</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="231" checked>231 - Bălți</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="235" checked>235 - Orhei</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="236" checked>236 - Ungheni</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="237" checked>237 - Strășeni</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="241" checked>241 - Cimișlia</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="242" checked>242 - Ștefan Vodă</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="243" checked>243 - Căușeni</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="244" checked>244 - Călărași</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="246" checked>246 - Edineț</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="247" checked>247 - Briceni</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="248" checked>248 - Criuleni</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="249" checked>249 - Glodeni</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="250" checked>250 - Florești</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="251" checked>251 - Dondușeni</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="252" checked>252 - Drochia</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="254" checked>254 - Rezina</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="256" checked>256 - Râșcani</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="258" checked>258 - Telenești</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="259" checked>259 - Fălești</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="262" checked>262 - Sângerei</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="263" checked>263 - Leova</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="264" checked>264 - Nisporeni</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="265" checked>265 - Anenii Noi</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="268" checked>268 - Ialoveni</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="269" checked>269 - Hâncești</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="271" checked>271 - Ocnița</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="272" checked>272 - Șoldănești</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="273" checked>273 - Cantemir</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="291" checked>291 - Ceadâr-Lunga</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="293" checked>293 - Vulcănești</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="294" checked>294 - Taraclia</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="297" checked>297 - Basarabeasca</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="298" checked>298 - Comrat</label>
+            <label><input type="checkbox" name="moldtelecomPrefix" value="299" checked>299 - Cahul</label>
+          </div>
         </div>
       </div>
     </div>
