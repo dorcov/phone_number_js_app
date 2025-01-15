@@ -357,7 +357,8 @@ function updateSourceStats(sourceData) {
     Orange: 0,
     Moldcell: 0,
     Unite: 0,
-    Moldtelecom: 0
+    Moldtelecom: 0,
+    Transnistria: 0 // Add Transnistria
   };
 
   sourceData.forEach(row => {
@@ -411,7 +412,8 @@ async function generateNumbers() {
     Orange: { original: 0, generated: 0 },
     Moldcell: { original: 0, generated: 0 },
     Unite: { original: 0, generated: 0 },
-    Moldtelecom: { original: 0, generated: 0 }
+    Moldtelecom: { original: 0, generated: 0 },
+    Transnistria: { original: 0, generated: 0 } // Add Transnistria
   };
 
   // Initialize counters object
@@ -760,7 +762,8 @@ async function generateFreshNumbers() {
     Orange: { original: 0, generated: 0 },
     Moldcell: { original: 0, generated: 0 },
     Unite: { original: 0, generated: 0 },
-    Moldtelecom: { original: 0, generated: 0 }
+    Moldtelecom: { original: 0, generated: 0 },
+    Transnistria: { original: 0, generated: 0 } // Add Transnistria
   };
 
   // Get selected operators and their prefixes
@@ -985,7 +988,8 @@ async function generateNumbers() {
     Orange: { original: 0, generated: 0 },
     Moldcell: { original: 0, generated: 0 },
     Unite: { original: 0, generated: 0 },
-    Moldtelecom: { original: 0, generated: 0 }
+    Moldtelecom: { original: 0, generated: 0 },
+    Transnistria: { original: 0, generated: 0 } // Add Transnistria
   };
 
   // Initialize counters object
