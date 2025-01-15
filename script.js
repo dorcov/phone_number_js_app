@@ -5,7 +5,8 @@ const OPERATOR_PREFIXES = {
   'Orange': ['60','61','62','66','68','69'],
   'Moldcell': ['76','78','79'],
   'Unite': ['66','67'],
-  'Moldtelecom': ['2']
+  'Moldtelecom': ['2'],
+  'Transnistria': ['210', '215', '216', '219', '552', '533', '555', '557']
 };
 
 const MOLDTELECOM_REGIONAL_PREFIXES = {
@@ -47,7 +48,19 @@ const MOLDTELECOM_REGIONAL_PREFIXES = {
   '299': 'Cahul'
 };
 
-const ALL_OPERATORS = ['Orange', 'Moldcell', 'Unite', 'Moldtelecom'];
+// Add new constant for Transnistria prefixes after MOLDTELECOM_REGIONAL_PREFIXES
+const TRANSNISTRIA_PREFIXES = {
+  '210': 'Grigoriopol',
+  '215': 'Dubăsari',
+  '216': 'Camenca',
+  '219': 'Dnestrovsc',
+  '552': 'Bender',
+  '533': 'Tiraspol',
+  '555': 'Râbnița',
+  '557': 'Slobozia'
+};
+
+const ALL_OPERATORS = ['Orange', 'Moldcell', 'Unite', 'Moldtelecom', 'Transnistria'];
 
 /************************************************
  * 2) Utility / Helper Functions
@@ -97,9 +110,11 @@ function formatTipDate(tip) {
 function generateNumberVariation(baseNumber, digitsToVary, operator) {
   if (!baseNumber || baseNumber.length !== 8) return null;
 
-  // Special handling for Moldtelecom
+  // Special handling for Moldtelecom and Transnistria
   if (operator === 'Moldtelecom') {
     return generateMoldtelecomNumber(baseNumber, digitsToVary);
+  } else if (operator === 'Transnistria') {
+    return generateTransnistriaNumber(baseNumber, digitsToVary);
   }
 
   const prefix = baseNumber.slice(0,2);
@@ -166,6 +181,44 @@ function generateMoldtelecomNumber(baseNumber, digitsToVary) {
   }
 
   // Calculate remaining digits needed based on prefix length
+  const remainingLength = 8 - regionalPrefix.length;
+  let newNumber = regionalPrefix;
+
+  // Generate random digits for the remaining positions
+  for (let i = 0; i < remainingLength; i++) {
+    newNumber += Math.floor(Math.random() * 10).toString();
+  }
+
+  // Validate the generated number
+  if (document.getElementById('validateSequential')?.checked && isSequentialNumber(newNumber)) {
+    return null;
+  }
+  
+  if (document.getElementById('validateRepeating')?.checked && hasRepeatingDigits(newNumber)) {
+    return null;
+  }
+
+  return newNumber;
+}
+
+// Add new function for Transnistria number generation (similar to generateMoldtelecomNumber)
+function generateTransnistriaNumber(baseNumber, digitsToVary) {
+  // Get the regional prefix from the base number
+  let regionalPrefix = '';
+  for (const prefix of Object.keys(TRANSNISTRIA_PREFIXES)) {
+    if (baseNumber.startsWith(prefix)) {
+      regionalPrefix = prefix;
+      break;
+    }
+  }
+
+  if (!regionalPrefix) {
+    // If no valid prefix found, use a random one
+    const prefixes = Object.keys(TRANSNISTRIA_PREFIXES);
+    regionalPrefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+  }
+
+  // Calculate remaining digits needed to reach 8 digits
   const remainingLength = 8 - regionalPrefix.length;
   let newNumber = regionalPrefix;
 

@@ -174,6 +174,7 @@ select[multiple] {
 .operator-stat:nth-child(2) { border-color: #7f00ff; } /* Moldcell - brighter */
 .operator-stat:nth-child(3) { border-color: #ff0000; } /* Unite - brighter */
 .operator-stat:nth-child(4) { border-color: #66BB6A; } /* Moldtelecom - brighter */
+.operator-stat:nth-child(5) { border-color: #c41e3a; } /* Transnistria - dark red */
 
 /* Better focus styles for dark mode */
 input:focus,
@@ -294,6 +295,10 @@ button:focus {
 
 .operator-group[data-operator="moldtelecom"] {
   border-color: #66BB6A;
+}
+
+.operator-group[data-operator="transnistria"] {
+  border-color: #c41e3a; /* Dark red for Transnistria */
 }
 
 .prefix-checkboxes {
