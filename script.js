@@ -8,6 +8,45 @@ const OPERATOR_PREFIXES = {
   'Moldtelecom': ['2']
 };
 
+const MOLDTELECOM_REGIONAL_PREFIXES = {
+  '22': 'Chișinău',
+  '230': 'Soroca',
+  '231': 'Bălți',
+  '235': 'Orhei',
+  '236': 'Ungheni',
+  '237': 'Strășeni',
+  '241': 'Cimișlia',
+  '242': 'Ștefan Vodă',
+  '243': 'Căușeni',
+  '244': 'Călărași',
+  '246': 'Edineț',
+  '247': 'Briceni',
+  '248': 'Criuleni',
+  '249': 'Glodeni',
+  '250': 'Florești',
+  '251': 'Dondușeni',
+  '252': 'Drochia',
+  '254': 'Rezina',
+  '256': 'Râșcani',
+  '258': 'Telenești',
+  '259': 'Fălești',
+  '262': 'Sângerei',
+  '263': 'Leova',
+  '264': 'Nisporeni',
+  '265': 'Anenii Noi',
+  '268': 'Ialoveni',
+  '269': 'Hâncești',
+  '271': 'Ocnița',
+  '272': 'Șoldănești',
+  '273': 'Cantemir',
+  '291': 'Ceadâr-Lunga',
+  '293': 'Vulcănești',
+  '294': 'Taraclia',
+  '297': 'Basarabeasca',
+  '298': 'Comrat',
+  '299': 'Cahul'
+};
+
 const ALL_OPERATORS = ['Orange', 'Moldcell', 'Unite', 'Moldtelecom'];
 
 /************************************************
@@ -18,6 +57,13 @@ function cleanSourceNumber(numberStr) {
   if (!numberStr) return null;
   let cleaned = String(numberStr).replace(/\D/g, '');
   if (!cleaned) return null;
+
+  // Special handling for Moldtelecom numbers
+  for (const prefix of Object.keys(MOLDTELECOM_REGIONAL_PREFIXES)) {
+    if (cleaned.startsWith(prefix)) {
+      return cleaned.slice(0, 8);
+    }
+  }
 
   if (cleaned.length >= 8) {
     for (const [operator, prefixes] of Object.entries(OPERATOR_PREFIXES)) {
@@ -50,6 +96,12 @@ function formatTipDate(tip) {
 
 function generateNumberVariation(baseNumber, digitsToVary, operator) {
   if (!baseNumber || baseNumber.length !== 8) return null;
+
+  // Special handling for Moldtelecom
+  if (operator === 'Moldtelecom') {
+    return generateMoldtelecomNumber(baseNumber, digitsToVary);
+  }
+
   const prefix = baseNumber.slice(0,2);
   
   let validPrefix = false;
@@ -94,6 +146,44 @@ function generateNumberVariation(baseNumber, digitsToVary, operator) {
   }
 
   return finalValid ? newNumber : null;
+}
+
+// Add this new function for Moldtelecom number generation
+function generateMoldtelecomNumber(baseNumber, digitsToVary) {
+  // Get the regional prefix from the base number
+  let regionalPrefix = '';
+  for (const prefix of Object.keys(MOLDTELECOM_REGIONAL_PREFIXES)) {
+    if (baseNumber.startsWith(prefix)) {
+      regionalPrefix = prefix;
+      break;
+    }
+  }
+
+  if (!regionalPrefix) {
+    // If no valid prefix found, use a random one
+    const prefixes = Object.keys(MOLDTELECOM_REGIONAL_PREFIXES);
+    regionalPrefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+  }
+
+  // Calculate remaining digits needed based on prefix length
+  const remainingLength = 8 - regionalPrefix.length;
+  let newNumber = regionalPrefix;
+
+  // Generate random digits for the remaining positions
+  for (let i = 0; i < remainingLength; i++) {
+    newNumber += Math.floor(Math.random() * 10).toString();
+  }
+
+  // Validate the generated number
+  if (document.getElementById('validateSequential')?.checked && isSequentialNumber(newNumber)) {
+    return null;
+  }
+  
+  if (document.getElementById('validateRepeating')?.checked && hasRepeatingDigits(newNumber)) {
+    return null;
+  }
+
+  return newNumber;
 }
 
 function readExcelFile(file) {
