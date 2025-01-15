@@ -116,11 +116,13 @@ function formatTipDate(tip) {
 function generateNumberVariation(baseNumber, digitsToVary, operator) {
   if (!baseNumber || baseNumber.length !== 8) return null;
 
-  // Special handling for Moldtelecom and Transnistria
+  // Special handling for specific operators
   if (operator === 'Moldtelecom') {
     return generateMoldtelecomNumber(baseNumber, digitsToVary);
   } else if (operator === 'Transnistria') {
     return generateTransnistriaNumber(baseNumber, digitsToVary);
+  } else if (operator === 'TransnistriaIDC') {
+    return generateTransnistriaIDCNumber(baseNumber, digitsToVary);
   }
 
   const prefix = baseNumber.slice(0,2);
@@ -231,6 +233,40 @@ function generateTransnistriaNumber(baseNumber, digitsToVary) {
   // Calculate remaining digits needed to reach 8 digits
   const remainingLength = 8 - regionalPrefix.length;
   let newNumber = regionalPrefix;
+
+  // Generate random digits for the remaining positions
+  for (let i = 0; i < remainingLength; i++) {
+    newNumber += Math.floor(Math.random() * 10).toString();
+  }
+
+  // Validate the generated number
+  if (document.getElementById('validateSequential')?.checked && isSequentialNumber(newNumber)) {
+    return null;
+  }
+  
+  if (document.getElementById('validateRepeating')?.checked && hasRepeatingDigits(newNumber)) {
+    return null;
+  }
+
+  return newNumber;
+}
+
+// Add new function for TransnistriaIDC mobile numbers
+function generateTransnistriaIDCNumber(baseNumber, digitsToVary) {
+  // Get the prefix (774, 777, 778, or 779)
+  const prefix = baseNumber.slice(0, 3);
+  
+  // Validate prefix
+  if (!OPERATOR_PREFIXES.TransnistriaIDC.includes(prefix)) {
+    // If invalid prefix, use a random one
+    const validPrefixes = OPERATOR_PREFIXES.TransnistriaIDC;
+    const randomPrefix = validPrefixes[Math.floor(Math.random() * validPrefixes.length)];
+    baseNumber = randomPrefix + baseNumber.slice(3);
+  }
+
+  // Calculate remaining digits needed (5 digits after prefix)
+  const remainingLength = 8 - 3; // 8 total - 3 for prefix
+  let newNumber = prefix;
 
   // Generate random digits for the remaining positions
   for (let i = 0; i < remainingLength; i++) {
