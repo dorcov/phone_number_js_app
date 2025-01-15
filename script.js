@@ -866,7 +866,7 @@ async function generateFreshNumbers() {
         generatedNumbers.push({
           Phone: baseNumber,
           Operator: operator,
-          Tip: 'Original (Fresh)'
+          Tip: 'Original (Nou)'
         });
         operatorCounts[operator].original++;
         counters.generated++;

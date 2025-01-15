@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#1a1a1a">
-  <title>Generator de Numere de Telefon</title>
+  <title>Generator de numere de telefon</title>
   <!-- Link to your CSS -->
   <link rel="stylesheet" href="style.css">
   <!-- Include SheetJS (xlsx.full.min.js) from CDN for Excel processing -->
@@ -40,12 +40,12 @@
     <div id="freshGenerationOptions" class="hidden">
       <h3>Selectați operatorii și prefixele pentru generare:</h3>
       <div class="operator-prefixes">
-        <div class="operator-group">
+        <div class="operator-group" data-operator="orange">
           <label>
             <input type="checkbox" id="generateOrange" checked>
             Orange
           </label>
-          <button type="button" class="select-all-btn" data-prefix="orange">Select/Deselect All</button>
+          <button type="button" class="select-all-btn" data-prefix="orange">Selectează/Deselectează toate</button>
           <div class="prefix-checkboxes">
             <label><input type="checkbox" name="orangePrefix" value="60" checked>60 - Orange</label>
             <label><input type="checkbox" name="orangePrefix" value="61" checked>61 - Orange</label>
@@ -56,7 +56,7 @@
           </div>
         </div>
 
-        <div class="operator-group">
+        <div class="operator-group" data-operator="moldcell">
           <label>
             <input type="checkbox" id="generateMoldcell" checked>
             Moldcell
@@ -69,7 +69,7 @@
           </div>
         </div>
 
-        <div class="operator-group">
+        <div class="operator-group" data-operator="unite">
           <label>
             <input type="checkbox" id="generateUnite" checked>
             Unite
@@ -81,7 +81,7 @@
           </div>
         </div>
 
-        <div class="operator-group">
+        <div class="operator-group" data-operator="moldtelecom">
           <label>
             <input type="checkbox" id="generateMoldtelecom" checked>
             Moldtelecom

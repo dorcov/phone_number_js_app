@@ -269,8 +269,25 @@ button:focus {
   background: var(--card-bg);
   padding: 15px;
   border-radius: 8px;
-  border: 1px solid var(--border-color);
+  border: 5px solid var(--border-color); /* Make border thicker */
   margin-bottom: 15px;
+}
+
+/* Add operator-specific border colors */
+.operator-group[data-operator="orange"] {
+  border-color: #ff9900;
+}
+
+.operator-group[data-operator="moldcell"] {
+  border-color: #7f00ff;
+}
+
+.operator-group[data-operator="unite"] {
+  border-color: #ff0000;
+}
+
+.operator-group[data-operator="moldtelecom"] {
+  border-color: #66BB6A;
 }
 
 .prefix-checkboxes {
