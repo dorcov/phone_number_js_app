@@ -776,18 +776,25 @@ function applyProportions(numbers) {
     return acc;
   }, {});
 
-  // Calculate target counts for each operator
-  const totalNumbers = numbers.length;
-  const targetCounts = {};
-  Object.entries(proportions).forEach(([operator, percentage]) => {
-    targetCounts[operator] = Math.round((percentage / 100) * totalNumbers);
-  });
+  // Calculate total numbers to be exported based on the highest proportion operator
+  const totalDesiredNumbers = Math.max(
+    ...Object.entries(proportions).map(([op, percentage]) => {
+      const available = grouped[op]?.length || 0;
+      return Math.ceil((available * 100) / percentage);
+    }).filter(n => isFinite(n))
+  );
 
-  // Select numbers based on target counts
+  // Select numbers based on proportions
   const result = [];
-  Object.entries(grouped).forEach(([operator, nums]) => {
-    const targetCount = targetCounts[operator] || 0;
-    const selected = nums.slice(0, targetCount);
+  Object.entries(proportions).forEach(([operator, percentage]) => {
+    if (percentage === 0) return; // Skip operators with 0%
+    
+    const targetCount = Math.round((percentage / 100) * totalDesiredNumbers);
+    const available = grouped[operator] || [];
+    
+    // Take minimum between what we need and what's available
+    const toTake = Math.min(targetCount, available.length);
+    const selected = available.slice(0, toTake);
     result.push(...selected);
   });
 
