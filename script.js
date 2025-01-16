@@ -706,11 +706,59 @@ async function generateVariationsForOperator(
 /************************************************
  * 4) Excel Download Function
  ***********************************************/
+function splitIntoSets(numbers, setCount) {
+  if (setCount <= 1) return [numbers];
+  
+  const setSize = Math.floor(numbers.length / setCount);
+  const sets = [];
+  
+  // Distribute numbers evenly
+  for (let i = 0; i < setCount; i++) {
+    const start = i * setSize;
+    const end = i === setCount - 1 ? numbers.length : start + setSize;
+    sets.push(numbers.slice(start, end));
+  }
+  
+  return sets;
+}
+
 function downloadExcel(jsonData) {
-  const worksheet = XLSX.utils.json_to_sheet(jsonData);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'NumereGenerate');
-  XLSX.writeFile(workbook, 'NumereGenerate.xlsx');
+  const setCount = parseInt(document.getElementById('splitSets').value);
+  
+  if (setCount <= 1) {
+    // Original single file download
+    const worksheet = XLSX.utils.json_to_sheet(jsonData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'NumereGenerate');
+    XLSX.writeFile(workbook, 'NumereGenerate.xlsx');
+  } else {
+    // Split into multiple files
+    const sets = splitIntoSets(jsonData, setCount);
+    const zip = new JSZip();
+    
+    sets.forEach((set, index) => {
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(set);
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'NumereGenerate');
+      
+      // Convert workbook to array buffer
+      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      
+      // Add to zip
+      zip.file(`NumereGenerate_Set${index + 1}.xlsx`, excelBuffer);
+    });
+    
+    // Generate and download zip
+    zip.generateAsync({ type: "blob" })
+      .then(content => {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(content);
+        link.download = 'NumereGenerate_Seturi.zip';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+  }
 }
 
 /************************************************

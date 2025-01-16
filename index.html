@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="style.css">
   <!-- Include SheetJS (xlsx.full.min.js) from CDN for Excel processing -->
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
   <div class="container">
@@ -248,6 +249,19 @@
 
     <div class="output hidden" id="output-section">
       <p>Generare completă! Click mai jos pentru descărcare:</p>
+      <button id="downloadBtn">Descarcă Excel</button>
+    </div>
+  </div>
+  <!-- Link to your main JavaScript -->
+  <script src="script.js"></script>
+</body>
+</html>
+          <option value="10">10 seturi</option>
+
+          <option value="15">15 seturi</option>
+          <option value="20">20 seturi</option>
+        </select>
+      </div>
       <button id="downloadBtn">Descarcă Excel</button>
     </div>
   </div>
