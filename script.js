@@ -915,7 +915,10 @@ document.addEventListener('DOMContentLoaded', () => {
 function downloadExcel(jsonData) {
   const applyProportionsCheckbox = document.getElementById('applyProportions');
   // Apply proportions only if checkbox is checked
-  const dataToExport = applyProportionsCheckbox.checked ? applyProportions(jsonData) : jsonData;
+  let dataToExport = applyProportionsCheckbox.checked ? applyProportions(jsonData) : jsonData;
+  
+  // Shuffle the final data before export
+  dataToExport = shuffleArray([...dataToExport]);
   
   const setCount = parseInt(document.getElementById('splitSets').value);
   
