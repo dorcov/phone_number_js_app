@@ -709,19 +709,50 @@ async function generateVariationsForOperator(
 function splitIntoSets(numbers, setCount) {
   if (setCount <= 1) return [numbers];
   
-  const setSize = Math.floor(numbers.length / setCount);
-  const sets = [];
+  // Group numbers by operator
+  const operatorGroups = {};
+  numbers.forEach(number => {
+    if (!operatorGroups[number.Operator]) {
+      operatorGroups[number.Operator] = [];
+    }
+    operatorGroups[number.Operator].push(number);
+  });
   
-  // Distribute numbers evenly
-  for (let i = 0; i < setCount; i++) {
-    const start = i * setSize;
-    const end = i === setCount - 1 ? numbers.length : start + setSize;
-    sets.push(numbers.slice(start, end));
-  }
+  // Initialize sets
+  const sets = Array.from({ length: setCount }, () => []);
+  
+  // Distribute numbers from each operator evenly across sets
+  Object.entries(operatorGroups).forEach(([operator, operatorNumbers]) => {
+    // Shuffle operator numbers to randomize distribution
+    shuffleArray(operatorNumbers);
+    
+    // Distribute numbers from this operator across sets
+    operatorNumbers.forEach((number, index) => {
+      sets[index % setCount].push(number);
+    });
+  });
+  
+  // Shuffle each set internally to mix operators
+  sets.forEach(set => shuffleArray(set));
   
   return sets;
 }
 
+// Add this helper function to verify set distribution (for debugging)
+function logSetDistribution(sets) {
+  sets.forEach((set, index) => {
+    console.log(`Set ${index + 1}:`);
+    const operatorCounts = {};
+    set.forEach(number => {
+      operatorCounts[number.Operator] = (operatorCounts[number.Operator] || 0) + 1;
+    });
+    console.log('Distribution:', operatorCounts);
+    console.log('Total numbers:', set.length);
+    console.log('---');
+  });
+}
+
+// Modify the downloadExcel function to include distribution logging
 function downloadExcel(jsonData) {
   const setCount = parseInt(document.getElementById('splitSets').value);
   
@@ -732,8 +763,11 @@ function downloadExcel(jsonData) {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'NumereGenerate');
     XLSX.writeFile(workbook, 'NumereGenerate.xlsx');
   } else {
-    // Split into multiple files
+    // Split into multiple files with even operator distribution
     const sets = splitIntoSets(jsonData, setCount);
+    // Log distribution for verification
+    logSetDistribution(sets);
+    
     const zip = new JSZip();
     
     sets.forEach((set, index) => {
