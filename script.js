@@ -763,66 +763,45 @@ function applyProportions(numbers) {
     TransnistriaIDC: parseInt(document.getElementById('transnistriaidcProp').value) || 0
   };
 
+  // Verifică dacă suma proporțiilor este 100%
   const total = Object.values(proportions).reduce((sum, val) => sum + val, 0);
   if (total !== 100) {
     throw new Error(`Suma proporțiilor trebuie să fie 100%. Actual: ${total}%`);
   }
 
-  // Group numbers by operator and type (Original vs Generated)
+  // Grupează numerele după operator
   const grouped = numbers.reduce((acc, num) => {
     if (!acc[num.Operator]) {
-      acc[num.Operator] = {
-        original: [],
-        generated: []
-      };
+      acc[num.Operator] = [];
     }
-    if (num.Tip.includes('Original')) {
-      acc[num.Operator].original.push(num);
-    } else {
-      acc[num.Operator].generated.push(num);
-    }
+    acc[num.Operator].push(num);
     return acc;
   }, {});
 
-  // Calculate total numbers to be exported based on the highest proportion operator
-  const totalBaseNumbers = Math.max(
-    ...Object.entries(proportions).map(([op, percentage]) => {
-      if (percentage === 0) return 0;
-      const available = (grouped[op]?.original.length || 0) + (grouped[op]?.generated.length || 0);
-      return available > 0 ? Math.ceil((available * 100) / percentage) : 0;
-    }).filter(n => isFinite(n) && n > 0)
-  );
+  // Calculează numărul total de numere disponibile
+  const totalAvailable = numbers.length;
 
-  // If no valid numbers found, return empty array
-  if (!isFinite(totalBaseNumbers) || totalBaseNumbers === 0) return [];
-
-  // Select numbers based on calculated proportions
+  // Calculează numărul țintă pentru fiecare operator bazat pe proporții
   const result = [];
-  Object.entries(proportions).forEach(([operator, percentage]) => {
-    if (percentage === 0) return;
-    
-    const targetCount = Math.floor((percentage * totalBaseNumbers) / 100);
-    const operatorNumbers = grouped[operator] || { original: [], generated: [] };
-    
-    // First take from original numbers
-    let selected = [...operatorNumbers.original];
-    
-    // If we need more, take from generated numbers
-    if (selected.length < targetCount) {
-      const remainingNeeded = targetCount - selected.length;
-      selected = [
-        ...selected,
-        ...operatorNumbers.generated.slice(0, remainingNeeded)
-      ];
-    } else if (selected.length > targetCount) {
-      // If we have too many original numbers, trim the excess
-      selected = selected.slice(0, targetCount);
-    }
-    
-    result.push(...selected);
-  });
+  for (const [operator, percentage] of Object.entries(proportions)) {
+    if (percentage === 0) continue;
 
-  // Update summary
+    // Calculează câte numere ar trebui să avem pentru acest operator
+    const targetCount = Math.round((percentage / 100) * totalAvailable);
+    const availableNumbers = grouped[operator] || [];
+
+    // Verifică dacă avem suficiente numere pentru acest operator
+    if (availableNumbers.length < targetCount) {
+      console.warn(`Nu sunt suficiente numere pentru ${operator}. ` +
+        `Disponibile: ${availableNumbers.length}, Necesare: ${targetCount}`);
+      result.push(...availableNumbers);
+    } else {
+      // Dacă avem suficiente numere, luăm exact câte avem nevoie
+      result.push(...availableNumbers.slice(0, targetCount));
+    }
+  }
+
+  // Actualizează sumarul
   updateProportionSummary(grouped, proportions, result);
 
   return result;
