@@ -722,7 +722,7 @@ function splitIntoSets(numbers, setCount) {
   const sets = Array.from({ length: setCount }, () => []);
   
   // Distribute numbers from each operator evenly across sets
-  Object.entries(operatorGroups).forEach(([operator, operatorNumbers]) => {
+  operatorGroups.forEach(([operator, operatorNumbers]) => {
     // Shuffle operator numbers to randomize distribution
     shuffleArray(operatorNumbers);
     
@@ -752,20 +752,71 @@ function logSetDistribution(sets) {
   });
 }
 
-// Modify the downloadExcel function to include distribution logging
+// Add new functions for handling proportions
+function applyProportions(numbers) {
+  const proportions = {
+    Orange: parseInt(document.getElementById('orangeProp').value) / 100,
+    Moldcell: parseInt(document.getElementById('moldcellProp').value) / 100,
+    Unite: parseInt(document.getElementById('uniteProp').value) / 100,
+    Moldtelecom: parseInt(document.getElementById('moldtelecomProp').value) / 100,
+    Transnistria: parseInt(document.getElementById('transnistria').value) / 100,
+    TransnistriaIDC: parseInt(document.getElementById('transnistriaidcProp').value) / 100
+  };
+
+  // Group numbers by operator
+  const grouped = numbers.reduce((acc, num) => {
+    if (!acc[num.Operator]) acc[num.Operator] = [];
+    acc[num.Operator].push(num);
+    return acc;
+  }, {});
+
+  // Apply proportions and combine results
+  const result = Object.entries(grouped).flatMap(([operator, nums]) => {
+    const count = Math.floor(nums.length * (proportions[operator] || 1));
+    return nums.slice(0, count);
+  });
+
+  // Update summary
+  updateProportionSummary(grouped, proportions, result);
+
+  return result;
+}
+
+function updateProportionSummary(grouped, proportions, filtered) {
+  const summary = document.getElementById('proportionSummary');
+  const filteredGroups = filtered.reduce((acc, num) => {
+    if (!acc[num.Operator]) acc[num.Operator] = 0;
+    acc[num.Operator]++;
+    return acc;
+  }, {});
+
+  let html = '<strong>Sumar numere pentru export:</strong><br>';
+  
+  Object.entries(grouped).forEach(([operator, nums]) => {
+    const original = nums.length;
+    const filtered = filteredGroups[operator] || 0;
+    const excluded = original - filtered;
+    html += `${operator}: ${filtered}/${original} (${excluded} excluse)<br>`;
+  });
+
+  html += `<strong>Total: ${filtered.length} numere</strong>`;
+  summary.innerHTML = html;
+}
+
+// Modify downloadExcel function to use proportions
 function downloadExcel(jsonData) {
+  // Apply proportions first
+  const filteredData = applyProportions(jsonData);
+  
   const setCount = parseInt(document.getElementById('splitSets').value);
   
   if (setCount <= 1) {
-    // Original single file download
-    const worksheet = XLSX.utils.json_to_sheet(jsonData);
+    const worksheet = XLSX.utils.json_to_sheet(filteredData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'NumereGenerate');
     XLSX.writeFile(workbook, 'NumereGenerate.xlsx');
   } else {
-    // Split into multiple files with even operator distribution
-    const sets = splitIntoSets(jsonData, setCount);
-    // Log distribution for verification
+    const sets = splitIntoSets(filteredData, setCount);
     logSetDistribution(sets);
     
     const zip = new JSZip();
@@ -775,14 +826,10 @@ function downloadExcel(jsonData) {
       const worksheet = XLSX.utils.json_to_sheet(set);
       XLSX.utils.book_append_sheet(workbook, worksheet, 'NumereGenerate');
       
-      // Convert workbook to array buffer
       const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-      
-      // Add to zip
       zip.file(`NumereGenerate_Set${index + 1}.xlsx`, excelBuffer);
     });
     
-    // Generate and download zip
     zip.generateAsync({ type: "blob" })
       .then(content => {
         const link = document.createElement('a');
@@ -838,6 +885,26 @@ function initializeEventListeners() {
 
 // Call the initialization function when the page loads
 document.addEventListener('DOMContentLoaded', initializeEventListeners);
+
+// Add event listeners for proportion inputs
+document.addEventListener('DOMContentLoaded', () => {
+  // ...existing initialization code...
+  
+  // Add listeners for proportion inputs
+  document.querySelectorAll('.proportion-item input').forEach(input => {
+    input.addEventListener('change', () => {
+      // Ensure value is between 0 and 100
+      input.value = Math.max(0, Math.min(100, parseInt(input.value) || 0));
+      
+      // Update summary if we have generated numbers
+      const downloadBtn = document.getElementById('downloadBtn');
+      if (downloadBtn.onclick) {
+        // This will trigger proportion calculation and summary update
+        applyProportions(window.lastGeneratedNumbers);
+      }
+    });
+  });
+});
 
 /************************************************
  * 6) Template Generation Functions
@@ -1271,7 +1338,13 @@ document.getElementById('generateBtn').addEventListener('click', async () => {
     const generatedNumbers = await generateNumbers();
     
     if (generatedNumbers) {
+      // Store numbers globally for proportion calculations
+      window.lastGeneratedNumbers = generatedNumbers;
+      
       document.getElementById('output-section').classList.remove('hidden');
+      // Initial proportion calculation
+      applyProportions(generatedNumbers);
+      
       document.getElementById('downloadBtn').onclick = () => {
         downloadExcel(generatedNumbers);
       };

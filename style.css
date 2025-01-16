@@ -402,3 +402,42 @@ button:focus {
   border: 1px solid var(--border-color);
   border-radius: 4px;
 }
+
+/* Styles for Export Proportions */
+.export-proportions {
+  margin: 15px 0;
+  padding: 15px;
+  background: var(--card-bg);
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+}
+
+.proportion-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.proportion-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.proportion-item input {
+  width: 60px;
+  padding: 4px;
+  background: var(--input-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+
+.proportion-summary {
+  margin-top: 10px;
+  padding: 10px;
+  background: var(--input-bg);
+  border-radius: 4px;
+  font-size: 0.9em;
+}

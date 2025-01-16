@@ -249,6 +249,38 @@
 
     <div class="output hidden" id="output-section">
       <p>Generare completă! Click mai jos pentru descărcare:</p>
+      
+      <div class="export-proportions">
+        <h4>Proporții operatori în export:</h4>
+        <div class="proportion-controls">
+          <div class="proportion-item">
+            <label for="orangeProp">Orange:</label>
+            <input type="number" id="orangeProp" min="0" max="100" value="100">%
+          </div>
+          <div class="proportion-item">
+            <label for="moldcellProp">Moldcell:</label>
+            <input type="number" id="moldcellProp" min="0" max="100" value="100">%
+          </div>
+          <div class="proportion-item">
+            <label for="uniteProp">Unite:</label>
+            <input type="number" id="uniteProp" min="0" max="100" value="100">%
+          </div>
+          <div class="proportion-item">
+            <label for="moldtelecomProp">Moldtelecom:</label>
+            <input type="number" id="moldtelecomProp" min="0" max="100" value="100">%
+          </div>
+          <div class="proportion-item">
+            <label for="transnistria">Transnistria:</label>
+            <input type="number" id="transnistria" min="0" max="100" value="100">%
+          </div>
+          <div class="proportion-item">
+            <label for="transnistriaidcProp">Transnistria IDC:</label>
+            <input type="number" id="transnistriaidcProp" min="0" max="100" value="100">%
+          </div>
+        </div>
+        <div id="proportionSummary" class="proportion-summary"></div>
+      </div>
+
       <div class="export-options">
         <label for="splitSets">Împarte în seturi egale:</label>
         <select id="splitSets">
