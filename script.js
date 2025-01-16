@@ -722,7 +722,7 @@ function splitIntoSets(numbers, setCount) {
   const sets = Array.from({ length: setCount }, () => []);
   
   // Distribute numbers from each operator evenly across sets
-  operatorGroups.forEach(([operator, operatorNumbers]) => {
+  Object.entries(operatorGroups).forEach(([operator, operatorNumbers]) => {
     // Shuffle operator numbers to randomize distribution
     shuffleArray(operatorNumbers);
     
