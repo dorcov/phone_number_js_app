@@ -754,7 +754,6 @@ function logSetDistribution(sets) {
 
 // Add new functions for handling proportions
 function applyProportions(numbers) {
-  // Get proportions and validate total
   const proportions = {
     Orange: parseInt(document.getElementById('orangeProp').value) || 0,
     Moldcell: parseInt(document.getElementById('moldcellProp').value) || 0,
@@ -769,29 +768,33 @@ function applyProportions(numbers) {
     throw new Error(`Suma proporțiilor trebuie să fie 100%. Actual: ${total}%`);
   }
 
-  // Group numbers by operator
+  // Group numbers by operator and type (Original vs Generated)
   const grouped = numbers.reduce((acc, num) => {
-    if (!acc[num.Operator]) acc[num.Operator] = [];
-    acc[num.Operator].push(num);
+    if (!acc[num.Operator]) {
+      acc[num.Operator] = {
+        original: [],
+        generated: []
+      };
+    }
+    if (num.Tip.includes('Original')) {
+      acc[num.Operator].original.push(num);
+    } else {
+      acc[num.Operator].generated.push(num);
+    }
     return acc;
   }, {});
 
-  // Calculate base number based on proportions and available numbers
-  const operatorLimits = {};
-  let totalBaseNumbers = Infinity;
-
-  Object.entries(proportions).forEach(([operator, percentage]) => {
-    if (percentage === 0) return;
-    
-    const available = grouped[operator]?.length || 0;
-    if (available === 0) return;
-    
-    const possibleNumbers = Math.floor((available * 100) / percentage);
-    totalBaseNumbers = Math.min(totalBaseNumbers, possibleNumbers);
-  });
+  // Calculate total numbers to be exported based on the highest proportion operator
+  const totalBaseNumbers = Math.max(
+    ...Object.entries(proportions).map(([op, percentage]) => {
+      if (percentage === 0) return 0;
+      const available = (grouped[op]?.original.length || 0) + (grouped[op]?.generated.length || 0);
+      return available > 0 ? Math.ceil((available * 100) / percentage) : 0;
+    }).filter(n => isFinite(n) && n > 0)
+  );
 
   // If no valid numbers found, return empty array
-  if (!isFinite(totalBaseNumbers)) return [];
+  if (!isFinite(totalBaseNumbers) || totalBaseNumbers === 0) return [];
 
   // Select numbers based on calculated proportions
   const result = [];
@@ -799,8 +802,23 @@ function applyProportions(numbers) {
     if (percentage === 0) return;
     
     const targetCount = Math.floor((percentage * totalBaseNumbers) / 100);
-    const available = grouped[operator] || [];
-    const selected = available.slice(0, targetCount);
+    const operatorNumbers = grouped[operator] || { original: [], generated: [] };
+    
+    // First take from original numbers
+    let selected = [...operatorNumbers.original];
+    
+    // If we need more, take from generated numbers
+    if (selected.length < targetCount) {
+      const remainingNeeded = targetCount - selected.length;
+      selected = [
+        ...selected,
+        ...operatorNumbers.generated.slice(0, remainingNeeded)
+      ];
+    } else if (selected.length > targetCount) {
+      // If we have too many original numbers, trim the excess
+      selected = selected.slice(0, targetCount);
+    }
+    
     result.push(...selected);
   });
 
@@ -823,7 +841,7 @@ function updateProportionSummary(grouped, proportions, filtered) {
   let totalFiltered = 0;
   
   Object.entries(grouped).forEach(([operator, nums]) => {
-    const original = nums.length;
+    const original = nums.original.length + nums.generated.length;
     const filtered = filteredGroups[operator] || 0;
     const percentage = proportions[operator];
     totalOriginal += original;
