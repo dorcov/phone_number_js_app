@@ -754,6 +754,7 @@ function logSetDistribution(sets) {
 
 // Add new functions for handling proportions
 function applyProportions(numbers) {
+  // Get proportions from inputs
   const proportions = {
     Orange: parseInt(document.getElementById('orangeProp').value) || 0,
     Moldcell: parseInt(document.getElementById('moldcellProp').value) || 0,
@@ -763,13 +764,13 @@ function applyProportions(numbers) {
     TransnistriaIDC: parseInt(document.getElementById('transnistriaidcProp').value) || 0
   };
 
-  // Verifică dacă suma proporțiilor este 100%
-  const total = Object.values(proportions).reduce((sum, val) => sum + val, 0);
-  if (total !== 100) {
-    throw new Error(`Suma proporțiilor trebuie să fie 100%. Actual: ${total}%`);
+  // Verify proportions sum to 100%
+  const totalProportion = Object.values(proportions).reduce((sum, val) => sum + val, 0);
+  if (totalProportion !== 100) {
+    throw new Error(`Suma proporțiilor trebuie să fie 100%. Actual: ${totalProportion}%`);
   }
 
-  // Grupează numerele după operator
+  // Group numbers by operator
   const grouped = numbers.reduce((acc, num) => {
     if (!acc[num.Operator]) {
       acc[num.Operator] = [];
@@ -778,30 +779,40 @@ function applyProportions(numbers) {
     return acc;
   }, {});
 
-  // Calculează numărul total de numere disponibile
-  const totalAvailable = numbers.length;
+  // Calculate available numbers per operator and total
+  const available = {};
+  let totalAvailable = 0;
+  Object.entries(grouped).forEach(([operator, nums]) => {
+    available[operator] = nums.length;
+    totalAvailable += nums.length;
+  });
 
-  // Calculează numărul țintă pentru fiecare operator bazat pe proporții
+  // Calculate how many numbers we can actually use to maintain proportions
+  const maxPossibleTotal = Math.floor(
+    Math.min(...Object.entries(proportions)
+      .filter(([_, prop]) => prop > 0)
+      .map(([op, prop]) => (available[op] || 0) * 100 / prop)
+    )
+  );
+
+  // Calculate target numbers for each operator
   const result = [];
-  for (const [operator, percentage] of Object.entries(proportions)) {
-    if (percentage === 0) continue;
+  Object.entries(proportions).forEach(([operator, percentage]) => {
+    if (percentage === 0) return;
 
-    // Calculează câte numere ar trebui să avem pentru acest operator
-    const targetCount = Math.round((percentage / 100) * totalAvailable);
-    const availableNumbers = grouped[operator] || [];
-
-    // Verifică dacă avem suficiente numere pentru acest operator
-    if (availableNumbers.length < targetCount) {
-      console.warn(`Nu sunt suficiente numere pentru ${operator}. ` +
-        `Disponibile: ${availableNumbers.length}, Necesare: ${targetCount}`);
-      result.push(...availableNumbers);
+    const targetCount = Math.round((percentage * maxPossibleTotal) / 100);
+    const operatorNumbers = grouped[operator] || [];
+    
+    if (operatorNumbers.length >= targetCount) {
+      // Take random numbers to maintain randomness
+      const shuffled = shuffleArray([...operatorNumbers]);
+      result.push(...shuffled.slice(0, targetCount));
     } else {
-      // Dacă avem suficiente numere, luăm exact câte avem nevoie
-      result.push(...availableNumbers.slice(0, targetCount));
+      result.push(...operatorNumbers);
     }
-  }
+  });
 
-  // Actualizează sumarul
+  // Update summary
   updateProportionSummary(grouped, proportions, result);
 
   return result;
@@ -818,15 +829,16 @@ function updateProportionSummary(grouped, proportions, filtered) {
   let html = '<strong>Sumar numere pentru export:</strong><br>';
   let totalOriginal = 0;
   let totalFiltered = 0;
-  
+
   Object.entries(grouped).forEach(([operator, nums]) => {
-    const original = nums.length; // Simplified this line
+    const original = nums.length;
     const filtered = filteredGroups[operator] || 0;
-    const percentage = proportions[operator];
+    const percentage = proportions[operator] || 0;
     totalOriginal += original;
     totalFiltered += filtered;
-    
-    html += `${operator}: ${filtered}/${original} (${percentage}%)<br>`;
+
+    const actualPercentage = totalFiltered > 0 ? ((filtered / totalFiltered) * 100).toFixed(1) : 0;
+    html += `${operator}: ${filtered}/${original} (Target: ${percentage}%, Actual: ${actualPercentage}%)<br>`;
   });
 
   html += `<br><strong>Total: ${totalFiltered}/${totalOriginal} numere</strong>`;
