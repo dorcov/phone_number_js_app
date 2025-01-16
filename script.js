@@ -996,11 +996,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (applyProportionsCheckbox.checked) {
           applyProportions(window.lastGeneratedNumbers);
         } else {
-          updateProportionSummary(
-            { 'Total': window.lastGeneratedNumbers }, 
-            {}, 
-            window.lastGeneratedNumbers
-          );
+          document.getElementById('proportionSummary').innerHTML = '';
         }
       } catch (error) {
         document.getElementById('errorMsg').textContent = error.message;
