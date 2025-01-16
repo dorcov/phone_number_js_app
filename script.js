@@ -1405,9 +1405,20 @@ document.getElementById('generateBtn').addEventListener('click', async () => {
       // Initial proportion calculation
       applyProportions(generatedNumbers);
       
-      document.getElementById('downloadBtn').onclick = () => {
-        downloadExcel(generatedNumbers);
-      };
+      // Înlocuim .onclick cu addEventListener
+      const downloadBtn = document.getElementById('downloadBtn');
+      // Removing old listeners first
+      const newBtn = downloadBtn.cloneNode(true);
+      downloadBtn.parentNode.replaceChild(newBtn, downloadBtn);
+      
+      // Adding new listener
+      newBtn.addEventListener('click', () => {
+        try {
+          downloadExcel(window.lastGeneratedNumbers);
+        } catch (error) {
+          document.getElementById('errorMsg').textContent = 'Eroare la descărcare: ' + error.message;
+        }
+      });
     }
   } catch (error) {
     document.getElementById('errorMsg').textContent = 'Eroare: ' + error.message;
