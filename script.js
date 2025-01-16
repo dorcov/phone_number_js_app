@@ -826,45 +826,34 @@ function updateProportionSummary(grouped, proportions, filtered) {
     return acc;
   }, {});
 
-  let html = '<strong>Sumar numere pentru export:</strong><br>';
+  let html = '<strong>Comparison Summary:</strong><br>';
   let totalOriginal = 0;
   let totalFiltered = 0;
 
-  // First calculate total filtered numbers
-  Object.values(filteredGroups).forEach(count => {
-    totalFiltered += count;
-  });
+  // Calculate totals
+  Object.values(filteredGroups).forEach(count => totalFiltered += count);
+  Object.values(grouped).forEach(nums => totalOriginal += nums.length);
 
-  // Then calculate total original numbers
-  Object.values(grouped).forEach(nums => {
-    totalOriginal += nums.length;
-  });
-
-  // Now display the stats for each operator
-  Object.entries(grouped).forEach(([operator, nums]) => {
-    const original = nums.length;
-    const filtered = filteredGroups[operator] || 0;
-    const targetPercentage = proportions[operator] || 0;
-    const actualPercentage = totalFiltered > 0 ? (filtered / totalFiltered * 100).toFixed(1) : 0;
-    
-    html += `${operator}: ${filtered}/${original} ` +
-           `(Target: ${targetPercentage}%, Actual: ${actualPercentage}%)<br>`;
-  });
-
-  // Add percentage comparison summary
-  html += '<br><strong>Comparison Summary:</strong><br>';
-  Object.entries(proportions).forEach(([operator, targetPercentage]) => {
-    if (targetPercentage > 0) {
+  // Generate comparison summary
+  Object.entries(proportions)
+    .sort((a, b) => b[1] - a[1]) // Sort by target percentage descending
+    .forEach(([operator, targetPercentage]) => {
+      const available = grouped[operator]?.length || 0;
       const filtered = filteredGroups[operator] || 0;
       const actualPercentage = totalFiltered > 0 ? (filtered / totalFiltered * 100).toFixed(1) : 0;
-      const difference = (actualPercentage - targetPercentage).toFixed(1);
-      const status = Math.abs(difference) < 1 ? '✅' : (difference > 0 ? '⚠️ High' : '⚠️ Low');
       
-      html += `${operator}: Target ${targetPercentage}% vs Actual ${actualPercentage}% (${difference}%) ${status}<br>`;
-    }
-  });
+      if (targetPercentage > 0 || filtered > 0) {
+        const difference = (actualPercentage - targetPercentage).toFixed(1);
+        const status = Math.abs(difference) < 1 ? '✅' : 
+                      difference > 0 ? '⚠️ High' : '⚠️ Low';
+        
+        html += `${operator}: ${filtered}/${available} — ` +
+               `Target ${targetPercentage}% vs Actual ${actualPercentage}% ` +
+               `(${difference > 0 ? '+' : ''}${difference}%) ${status}<br>`;
+      }
+    });
 
-  html += `<br><strong>Total: ${totalFiltered}/${totalOriginal} numere</strong>`;
+  html += `<br><strong>Total numbers: ${totalFiltered}/${totalOriginal}</strong>`;
   summary.innerHTML = html;
 }
 
