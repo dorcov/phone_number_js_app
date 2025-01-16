@@ -1441,16 +1441,19 @@ document.getElementById('generateBtn').addEventListener('click', async () => {
       window.lastGeneratedNumbers = generatedNumbers;
       
       document.getElementById('output-section').classList.remove('hidden');
-      // Initial proportion calculation
-      applyProportions(generatedNumbers);
       
-      // Înlocuim .onclick cu addEventListener
+      // Only calculate proportions if checkbox is checked
+      const applyProportionsCheckbox = document.getElementById('applyProportions');
+      if (applyProportionsCheckbox.checked) {
+        applyProportions(generatedNumbers);
+      } else {
+        document.getElementById('proportionSummary').innerHTML = '';
+      }
+      
       const downloadBtn = document.getElementById('downloadBtn');
-      // Removing old listeners first
       const newBtn = downloadBtn.cloneNode(true);
       downloadBtn.parentNode.replaceChild(newBtn, downloadBtn);
       
-      // Adding new listener
       newBtn.addEventListener('click', () => {
         try {
           downloadExcel(window.lastGeneratedNumbers);
