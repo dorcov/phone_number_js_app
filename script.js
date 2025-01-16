@@ -779,6 +779,21 @@ function applyProportions(numbers) {
     return acc;
   }, {});
 
+  // Sort numbers within each operator group to prioritize source numbers
+  Object.keys(grouped).forEach(operator => {
+    grouped[operator].sort((a, b) => {
+      // Prioritize 'Original' over 'Original (Auto)' over 'Generat'
+      const getPriority = (tip) => {
+        if (tip === 'Original') return 0;
+        if (tip === 'Original (Auto)') return 1;
+        if (tip === 'Original (Auto-Seed)') return 2;
+        if (tip === 'Original (Nou)') return 3;
+        return 4; // Pentru 'Generat'
+      };
+      return getPriority(a.Tip) - getPriority(b.Tip);
+    });
+  });
+
   // Calculate available numbers per operator and total
   const available = {};
   let totalAvailable = 0;
@@ -804,9 +819,8 @@ function applyProportions(numbers) {
     const operatorNumbers = grouped[operator] || [];
     
     if (operatorNumbers.length >= targetCount) {
-      // Take random numbers to maintain randomness
-      const shuffled = shuffleArray([...operatorNumbers]);
-      result.push(...shuffled.slice(0, targetCount));
+      // Take first N numbers (which are already sorted by priority)
+      result.push(...operatorNumbers.slice(0, targetCount));
     } else {
       result.push(...operatorNumbers);
     }
