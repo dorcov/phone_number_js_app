@@ -820,7 +820,7 @@ function updateProportionSummary(grouped, proportions, filtered) {
   let totalFiltered = 0;
   
   Object.entries(grouped).forEach(([operator, nums]) => {
-    const original = nums.original.length + nums.generated.length;
+    const original = nums.length; // Simplified this line
     const filtered = filteredGroups[operator] || 0;
     const percentage = proportions[operator];
     totalOriginal += original;
