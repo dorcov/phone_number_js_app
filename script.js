@@ -1161,6 +1161,9 @@ async function generateFreshNumbers() {
   document.getElementById('generatedCount').textContent = counters.generated;
   document.getElementById('rejectedCount').textContent = counters.rejected;
 
+  // Show the summary section for fresh mode
+  document.getElementById('summary-section').classList.remove('hidden');
+
   // Update operator-specific counts
   for (const op of ALL_OPERATORS) {
     document.getElementById(`${op.toLowerCase()}OriginalCount`).textContent = 
