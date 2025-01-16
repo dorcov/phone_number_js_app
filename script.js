@@ -754,14 +754,20 @@ function logSetDistribution(sets) {
 
 // Add new functions for handling proportions
 function applyProportions(numbers) {
+  // Get proportions and validate total
   const proportions = {
-    Orange: parseInt(document.getElementById('orangeProp').value) / 100,
-    Moldcell: parseInt(document.getElementById('moldcellProp').value) / 100,
-    Unite: parseInt(document.getElementById('uniteProp').value) / 100,
-    Moldtelecom: parseInt(document.getElementById('moldtelecomProp').value) / 100,
-    Transnistria: parseInt(document.getElementById('transnistria').value) / 100,
-    TransnistriaIDC: parseInt(document.getElementById('transnistriaidcProp').value) / 100
+    Orange: parseInt(document.getElementById('orangeProp').value) || 0,
+    Moldcell: parseInt(document.getElementById('moldcellProp').value) || 0,
+    Unite: parseInt(document.getElementById('uniteProp').value) || 0,
+    Moldtelecom: parseInt(document.getElementById('moldtelecomProp').value) || 0,
+    Transnistria: parseInt(document.getElementById('transnistria').value) || 0,
+    TransnistriaIDC: parseInt(document.getElementById('transnistriaidcProp').value) || 0
   };
+
+  const total = Object.values(proportions).reduce((sum, val) => sum + val, 0);
+  if (total !== 100) {
+    throw new Error(`Suma proporțiilor trebuie să fie 100%. Actual: ${total}%`);
+  }
 
   // Group numbers by operator
   const grouped = numbers.reduce((acc, num) => {
@@ -770,10 +776,19 @@ function applyProportions(numbers) {
     return acc;
   }, {});
 
-  // Apply proportions and combine results
-  const result = Object.entries(grouped).flatMap(([operator, nums]) => {
-    const count = Math.floor(nums.length * (proportions[operator] || 1));
-    return nums.slice(0, count);
+  // Calculate target counts for each operator
+  const totalNumbers = numbers.length;
+  const targetCounts = {};
+  Object.entries(proportions).forEach(([operator, percentage]) => {
+    targetCounts[operator] = Math.round((percentage / 100) * totalNumbers);
+  });
+
+  // Select numbers based on target counts
+  const result = [];
+  Object.entries(grouped).forEach(([operator, nums]) => {
+    const targetCount = targetCounts[operator] || 0;
+    const selected = nums.slice(0, targetCount);
+    result.push(...selected);
   });
 
   // Update summary
@@ -791,17 +806,62 @@ function updateProportionSummary(grouped, proportions, filtered) {
   }, {});
 
   let html = '<strong>Sumar numere pentru export:</strong><br>';
+  let totalOriginal = 0;
+  let totalFiltered = 0;
   
   Object.entries(grouped).forEach(([operator, nums]) => {
     const original = nums.length;
     const filtered = filteredGroups[operator] || 0;
-    const excluded = original - filtered;
-    html += `${operator}: ${filtered}/${original} (${excluded} excluse)<br>`;
+    const percentage = proportions[operator];
+    totalOriginal += original;
+    totalFiltered += filtered;
+    
+    html += `${operator}: ${filtered}/${original} (${percentage}%)<br>`;
   });
 
-  html += `<strong>Total: ${filtered.length} numere</strong>`;
+  html += `<br><strong>Total: ${totalFiltered}/${totalOriginal} numere</strong>`;
   summary.innerHTML = html;
 }
+
+// Add validation for proportion inputs
+document.addEventListener('DOMContentLoaded', () => {
+  // ...existing initialization code...
+
+  let updating = false;
+  const proportionInputs = document.querySelectorAll('.proportion-item input');
+  
+  proportionInputs.forEach(input => {
+    input.addEventListener('change', () => {
+      if (updating) return;
+      updating = true;
+
+      // Ensure value is between 0 and 100
+      input.value = Math.max(0, Math.min(100, parseInt(input.value) || 0));
+      
+      // Calculate total
+      const total = Array.from(proportionInputs)
+        .reduce((sum, inp) => sum + (parseInt(inp.value) || 0), 0);
+      
+      if (total !== 100) {
+        document.getElementById('errorMsg').textContent = 
+          `Atenție: Suma proporțiilor trebuie să fie 100%. Actual: ${total}%`;
+      } else {
+        document.getElementById('errorMsg').textContent = '';
+      }
+
+      // Update summary if we have generated numbers
+      if (window.lastGeneratedNumbers) {
+        try {
+          applyProportions(window.lastGeneratedNumbers);
+        } catch (error) {
+          document.getElementById('errorMsg').textContent = error.message;
+        }
+      }
+      
+      updating = false;
+    });
+  });
+});
 
 // Modify downloadExcel function to use proportions
 function downloadExcel(jsonData) {

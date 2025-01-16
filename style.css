@@ -434,10 +434,21 @@ button:focus {
   border-radius: 4px;
 }
 
+.proportion-item input.invalid {
+  border-color: var(--error-color);
+  background-color: rgba(255, 0, 0, 0.1);
+}
+
 .proportion-summary {
   margin-top: 10px;
   padding: 10px;
   background: var(--input-bg);
   border-radius: 4px;
   font-size: 0.9em;
+}
+
+.proportion-total {
+  margin-top: 10px;
+  font-weight: bold;
+  text-align: right;
 }
