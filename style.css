@@ -452,3 +452,21 @@ button:focus {
   font-weight: bold;
   text-align: right;
 }
+
+.proportion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.apply-proportions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.apply-proportions input[type="checkbox"] {
+  margin: 0;
+}

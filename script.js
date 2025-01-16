@@ -878,18 +878,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Modify downloadExcel function to use proportions
 function downloadExcel(jsonData) {
-  // Apply proportions first
-  const filteredData = applyProportions(jsonData);
+  const applyProportionsCheckbox = document.getElementById('applyProportions');
+  // Apply proportions only if checkbox is checked
+  const dataToExport = applyProportionsCheckbox.checked ? applyProportions(jsonData) : jsonData;
   
   const setCount = parseInt(document.getElementById('splitSets').value);
   
   if (setCount <= 1) {
-    const worksheet = XLSX.utils.json_to_sheet(filteredData);
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'NumereGenerate');
     XLSX.writeFile(workbook, 'NumereGenerate.xlsx');
   } else {
-    const sets = splitIntoSets(filteredData, setCount);
+    const sets = splitIntoSets(dataToExport, setCount);
     logSetDistribution(sets);
     
     const zip = new JSZip();
@@ -976,6 +977,35 @@ document.addEventListener('DOMContentLoaded', () => {
         applyProportions(window.lastGeneratedNumbers);
       }
     });
+  });
+});
+
+// Add listener for proportion checkbox
+document.addEventListener('DOMContentLoaded', () => {
+  // ...existing initialization code...
+  
+  const applyProportionsCheckbox = document.getElementById('applyProportions');
+  const proportionControls = document.querySelector('.proportion-controls');
+  
+  applyProportionsCheckbox.addEventListener('change', () => {
+    proportionControls.style.opacity = applyProportionsCheckbox.checked ? '1' : '0.5';
+    proportionControls.style.pointerEvents = applyProportionsCheckbox.checked ? 'auto' : 'none';
+    
+    if (window.lastGeneratedNumbers) {
+      try {
+        if (applyProportionsCheckbox.checked) {
+          applyProportions(window.lastGeneratedNumbers);
+        } else {
+          updateProportionSummary(
+            { 'Total': window.lastGeneratedNumbers }, 
+            {}, 
+            window.lastGeneratedNumbers
+          );
+        }
+      } catch (error) {
+        document.getElementById('errorMsg').textContent = error.message;
+      }
+    }
   });
 });
 
