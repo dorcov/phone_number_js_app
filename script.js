@@ -830,15 +830,38 @@ function updateProportionSummary(grouped, proportions, filtered) {
   let totalOriginal = 0;
   let totalFiltered = 0;
 
+  // First calculate total filtered numbers
+  Object.values(filteredGroups).forEach(count => {
+    totalFiltered += count;
+  });
+
+  // Then calculate total original numbers
+  Object.values(grouped).forEach(nums => {
+    totalOriginal += nums.length;
+  });
+
+  // Now display the stats for each operator
   Object.entries(grouped).forEach(([operator, nums]) => {
     const original = nums.length;
     const filtered = filteredGroups[operator] || 0;
-    const percentage = proportions[operator] || 0;
-    totalOriginal += original;
-    totalFiltered += filtered;
+    const targetPercentage = proportions[operator] || 0;
+    const actualPercentage = totalFiltered > 0 ? (filtered / totalFiltered * 100).toFixed(1) : 0;
+    
+    html += `${operator}: ${filtered}/${original} ` +
+           `(Target: ${targetPercentage}%, Actual: ${actualPercentage}%)<br>`;
+  });
 
-    const actualPercentage = totalFiltered > 0 ? ((filtered / totalFiltered) * 100).toFixed(1) : 0;
-    html += `${operator}: ${filtered}/${original} (Target: ${percentage}%, Actual: ${actualPercentage}%)<br>`;
+  // Add percentage comparison summary
+  html += '<br><strong>Comparison Summary:</strong><br>';
+  Object.entries(proportions).forEach(([operator, targetPercentage]) => {
+    if (targetPercentage > 0) {
+      const filtered = filteredGroups[operator] || 0;
+      const actualPercentage = totalFiltered > 0 ? (filtered / totalFiltered * 100).toFixed(1) : 0;
+      const difference = (actualPercentage - targetPercentage).toFixed(1);
+      const status = Math.abs(difference) < 1 ? '✅' : (difference > 0 ? '⚠️ High' : '⚠️ Low');
+      
+      html += `${operator}: Target ${targetPercentage}% vs Actual ${actualPercentage}% (${difference}%) ${status}<br>`;
+    }
   });
 
   html += `<br><strong>Total: ${totalFiltered}/${totalOriginal} numere</strong>`;
