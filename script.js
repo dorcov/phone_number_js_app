@@ -1626,3 +1626,35 @@ document.querySelectorAll('input[name="generationMode"]').forEach(radio => {
 });
 
 // ...rest of existing code...
+
+// Adăugăm la sfârșitul fișierului:
+
+// Funcție pentru generarea numerelor plutitoare
+function createFloatingNumbers() {
+  const numbers = '0123456789';
+  const container = document.body;
+  
+  setInterval(() => {
+    const number = document.createElement('div');
+    number.className = 'floating-number';
+    number.style.left = Math.random() * 100 + 'vw';
+    number.style.top = Math.random() * 100 + 'vh';
+    number.style.fontSize = (Math.random() * 40 + 20) + 'px'; // Dimensiuni între 20px și 60px
+    number.style.opacity = '0';
+    number.textContent = numbers[Math.floor(Math.random() * numbers.length)];
+    
+    container.appendChild(number);
+    
+    // Curățăm elementele după ce animația s-a terminat
+    setTimeout(() => {
+      number.remove();
+    }, 15000); // 15 secunde, la fel ca durata animației
+  }, 500); // Creăm un nou număr la fiecare 500ms
+}
+
+// Inițializăm efectul când documentul este încărcat
+document.addEventListener('DOMContentLoaded', () => {
+  createFloatingNumbers();
+});
+
+// ...existing code...

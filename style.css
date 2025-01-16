@@ -26,6 +26,41 @@ body {
   border-radius: 8px;
 }
 
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background: var(--bg-color);
+  opacity: 1;
+}
+
+@keyframes floatingNumbers {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100px);
+  }
+}
+
+.floating-number {
+  position: fixed;
+  color: var(--text-color);
+  opacity: 0;
+  z-index: -1;
+  animation: floatingNumbers 15s infinite linear;
+  pointer-events: none;
+}
+
 h1 {
   text-align: center;
 }
