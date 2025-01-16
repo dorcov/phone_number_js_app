@@ -1226,6 +1226,9 @@ document.querySelectorAll('input[name="generationMode"]').forEach(radio => {
     const sourceElements = document.querySelectorAll('.source-only');
     const freshOptions = document.getElementById('freshGenerationOptions');
     
+    // Reset stats when switching modes
+    resetStats();
+    
     if (e.target.value === 'fresh') {
       sourceElements.forEach(el => el.classList.add('hidden'));
       freshOptions.classList.remove('hidden');
@@ -1273,3 +1276,44 @@ document.querySelectorAll('input[name="generationMode"]').forEach(radio => {
     }
   });
 });
+
+// Add new function to reset stats
+function resetStats() {
+  // Reset all counter spans
+  document.querySelectorAll('#operatorStats span').forEach(span => {
+    span.textContent = '0';
+  });
+  
+  // Reset summary counters
+  document.getElementById('processedCount').textContent = '0';
+  document.getElementById('generatedCount').textContent = '0';
+  document.getElementById('rejectedCount').textContent = '0';
+  
+  // Hide the output section
+  document.getElementById('output-section').classList.add('hidden');
+  
+  // Clear any error messages
+  document.getElementById('errorMsg').textContent = '';
+}
+
+// Update the radio button event listener to reset stats
+document.querySelectorAll('input[name="generationMode"]').forEach(radio => {
+  radio.addEventListener('change', (e) => {
+    const sourceElements = document.querySelectorAll('.source-only');
+    const freshOptions = document.getElementById('freshGenerationOptions');
+    
+    // Reset stats when switching modes
+    resetStats();
+    
+    if (e.target.value === 'fresh') {
+      sourceElements.forEach(el => el.classList.add('hidden'));
+      freshOptions.classList.remove('hidden');
+      document.getElementById('missingOperators').classList.add('hidden');
+    } else {
+      sourceElements.forEach(el => el.classList.remove('hidden'));
+      freshOptions.classList.add('hidden');
+    }
+  });
+});
+
+// ...rest of existing code...
