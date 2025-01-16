@@ -776,25 +776,31 @@ function applyProportions(numbers) {
     return acc;
   }, {});
 
-  // Calculate total numbers to be exported based on the highest proportion operator
-  const totalDesiredNumbers = Math.max(
-    ...Object.entries(proportions).map(([op, percentage]) => {
-      const available = grouped[op]?.length || 0;
-      return Math.ceil((available * 100) / percentage);
-    }).filter(n => isFinite(n))
-  );
+  // Calculate base number based on proportions and available numbers
+  const operatorLimits = {};
+  let totalBaseNumbers = Infinity;
 
-  // Select numbers based on proportions
+  Object.entries(proportions).forEach(([operator, percentage]) => {
+    if (percentage === 0) return;
+    
+    const available = grouped[operator]?.length || 0;
+    if (available === 0) return;
+    
+    const possibleNumbers = Math.floor((available * 100) / percentage);
+    totalBaseNumbers = Math.min(totalBaseNumbers, possibleNumbers);
+  });
+
+  // If no valid numbers found, return empty array
+  if (!isFinite(totalBaseNumbers)) return [];
+
+  // Select numbers based on calculated proportions
   const result = [];
   Object.entries(proportions).forEach(([operator, percentage]) => {
-    if (percentage === 0) return; // Skip operators with 0%
+    if (percentage === 0) return;
     
-    const targetCount = Math.round((percentage / 100) * totalDesiredNumbers);
+    const targetCount = Math.floor((percentage * totalBaseNumbers) / 100);
     const available = grouped[operator] || [];
-    
-    // Take minimum between what we need and what's available
-    const toTake = Math.min(targetCount, available.length);
-    const selected = available.slice(0, toTake);
+    const selected = available.slice(0, targetCount);
     result.push(...selected);
   });
 
