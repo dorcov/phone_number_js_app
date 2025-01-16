@@ -747,7 +747,7 @@ function logSetDistribution(sets) {
       operatorCounts[number.Operator] = (operatorCounts[number.Operator] || 0) + 1;
     });
     console.log('Distribution:', operatorCounts);
-    console.log('Total numbers:', set.length);
+    console.log('Total:', set.length);
     console.log('---');
   });
 }
@@ -840,7 +840,7 @@ function updateProportionSummary(grouped, proportions, filtered) {
     return acc;
   }, {});
 
-  let html = '<strong>Comparison Summary:</strong><br>';
+  let html = '<strong>Sumar:</strong><br>';
   let totalOriginal = 0;
   let totalFiltered = 0;
 
@@ -867,7 +867,7 @@ function updateProportionSummary(grouped, proportions, filtered) {
       }
     });
 
-  html += `<br><strong>Total numbers: ${totalFiltered}/${totalOriginal}</strong>`;
+  html += `<br><strong>Total: ${totalFiltered}/${totalOriginal}</strong>`;
   summary.innerHTML = html;
 }
 
