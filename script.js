@@ -286,15 +286,39 @@ function generateTransnistriaIDCNumber(baseNumber, digitsToVary) {
 
 function readExcelFile(file) {
   return new Promise((resolve, reject) => {
+    if (!file) {
+      reject(new Error('Nu a fost furnizat niciun fișier'));
+      return;
+    }
+
     const reader = new FileReader();
+    
     reader.onload = (evt) => {
       try {
+        if (!evt.target?.result) {
+          throw new Error('Nu s-au putut citi datele din fișier');
+        }
+
         const data = new Uint8Array(evt.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
+        
+        if (!workbook?.SheetNames?.length) {
+          throw new Error('Fișierul Excel nu conține foi de lucru');
+        }
+
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
+        
+        if (!worksheet) {
+          throw new Error('Nu s-a putut accesa foaia de lucru');
+        }
+
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
         
+        if (!Array.isArray(jsonData)) {
+          throw new Error('Nu s-au putut extrage datele din foaia de lucru');
+        }
+
         // Reset previous stats
         document.querySelectorAll('#operatorStats span').forEach(span => span.textContent = '0');
         document.getElementById('generatedCount').textContent = '0';
@@ -307,11 +331,19 @@ function readExcelFile(file) {
         
         resolve(jsonData);
       } catch (err) {
-        reject(err);
+        reject(new Error(`Eroare la procesarea fișierului Excel: ${err.message}`));
       }
     };
-    reader.onerror = (error) => reject(error);
-    reader.readAsArrayBuffer(file);
+    
+    reader.onerror = (error) => {
+      reject(new Error(`Eroare la citirea fișierului: ${error?.target?.error?.message || 'Eroare necunoscută'}`));
+    };
+
+    try {
+      reader.readAsArrayBuffer(file);
+    } catch (err) {
+      reject(new Error(`Eroare la inițierea citirii fișierului: ${err.message}`));
+    }
   });
 }
 
